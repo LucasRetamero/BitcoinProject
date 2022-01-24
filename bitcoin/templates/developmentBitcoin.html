@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% load steptimetags %}
+
+{% block content %}
+<table class="table">
+    <thead class="thead-dark">
+      <th class="col-3">Start Date</th>
+      <th class="col-3">End Date</th>
+    </thead>
+      <tr>
+        <td>{{ valueDev.Data.TimeFrom|print_timestamp|date:"d-m-Y" }}</td>
+        <td>{{ valueDev.Data.TimeTo|print_timestamp|date:"d-m-Y" }}</td>
+       </tr>
+</table>
+
+<table class="table">
+    <thead class="thead-dark">
+      <th class="col-3">Start Date</th>
+      <th class="col-3">End Date</th>
+    </thead>
+      <tr>
+        <td>{{ valueDev.Data.TimeFrom|print_timestamp|date:"d-m-Y" }}</td>
+        <td>{{ valueDev.Data.TimeTo|print_timestamp|date:"d-m-Y" }}</td>
+       </tr>
+</table>
+
+<br>	
+<div class="d-block" style="width: 600px;height: 600px;margin-left: 25%;">
+ <div class="alert alert-primary" role="alert">
+  <h3>Desenvolvimento do Bitcoin</h3>
+</div>
+<button class="btn bg-primary text-white h3" onclick="sizeGraph('more')">+</button>
+<button class="btn bg-primary text-white h3" onclick="sizeGraph('less')">-</button>
+ <canvas id="DevelopmentBitcoinChart" width="400" height="400"></canvas>
+</div>
+<br>
+
+<table class="table d-block" id="valuesDeb" name="valuesDeb">
+ <thead class="thead-dark">
+  <th>Date</th>
+  <th>Close</th>
+  <th>Volume</th>
+  <th>Action</th>
+ </thead>
+ 
+ {% for val in valueDev.Data.Data %}
+  <tr>
+   <td>{{ val.time|print_timestamp|date:"d-m-Y"  }}</td>
+   <td>{{ val.close  }}</td>
+   <td>{{ val.volumefrom  }}</td>
+   <td><a href="{% url 'savedevelopmentbtc' date=val.time|print_timestamp|date:'d-m-Y' close=val.close volume=val.volumefrom  %}" target="_blank"><button type="button" class="btn bg-primary text-white">Save</button></td>
+  </tr>
+ {% endfor %}
+</table>
+
+<script type="text/javascript">
+const data = {
+  labels: JSON.parse('{{ dates|safe }}'),
+  datasets: [
+    {
+      label: 'Ùltimo',
+      data: JSON.parse('{{ closes|safe }}'),
+      borderColor: 'rgb(5, 200, 220)',
+      backgroundColor: 'rgb(5, 200, 220)',
+    },
+    {
+      label: 'Volume',
+      data: JSON.parse('{{ volumes|safe }}'),
+      borderColor: 'rgb(255, 0, 0)',
+      backgroundColor: 'rgb(255, 0, 0)',
+    }
+  ]
+};
+
+const config = {
+  type: 'line',
+  data: data,
+  options: {
+    responsive: true,
+	maintainAspectRatio: false,
+    plugins: {
+    },
+  },
+};
+
+var bitcoinChart = new Chart(
+    document.getElementById('DevelopmentBitcoinChart'),
+    config
+);
+
+function sizeGraph(option){
+ var opt = document.getElementById("DevelopmentBitcoinChart");
+  opt.style.height = setSizeGraph(option, opt).toString() + "px";
+  opt.style.width =  setSizeGraph(option, opt).toString() + "px";
+}
+
+function setSizeGraph(option, opt){
+ return (option == "more") ? parseInt(opt.style.width) + 50 : parseInt(opt.style.width) - 50 ;
+} 
+</script>
+{% endblock %}

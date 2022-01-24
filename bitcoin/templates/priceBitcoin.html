@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<table class="table">
+    <thead class="thead-dark">
+      <th class="col-3">Price</th>
+      <th class="col-3">Time</th>
+    </thead>
+      <tr>
+        <td><h1 id='info'></h1></td>
+        <td><h1 id='infotime'></h1></td>
+       </tr>
+</table>
+
+<div id="container">
+<div class="alert alert-primary" role="alert">
+  <h3>Verificar valor do bitcoin</h3>
+</div>
+<form action="{% url 'Price' %}" method="GET">
+  <div class="row">
+  <div class="col-3">
+    <label for="exampleFormControlSelect1">Day</label>
+    <select class="form-control" onChange="checkFormEmpty()" id="txtDay" name="txtDay" required>
+     <option value="Default" selected>Day</option>
+	</select>
+  </div>
+   <div class="col-3">
+    <label for="exampleFormControlSelect1">Month</label>
+    <select class="form-control" onChange="checkFormEmpty()" id="txtMonth" name="txtMonth" required>
+      <option value="Default" selected>Month</option>
+    </select>
+  </div>
+   <div class="col-3">
+    <label for="exampleFormControlSelect1">Year</label>
+    <select class="form-control" onChange="checkFormEmpty()" id="txtYear" name="txtYear" required>
+      <option value="Default" selected>Year</option>
+    </select>
+  </div>
+  </div>
+  <div class="form-group form-check">
+   <input type="checkbox" class="form-check-input" id="cbSaveDB" name="cbSaveDB">
+   <label class="form-check-label" for="cbSaveDB">Salvar no banco de dados</label>
+  </div>
+  <button type="submit" class="btn btn-primary" style="display:none;" id="checkPrice">Verificar preço</button>
+</form>
+</div>
+{% if valueByDate %}
+<table class="table">
+  <thead class="thead-dark">
+   <th class="col-3">Price</th>
+   <th class="col-3">Date</th>
+  </thead>
+   <tr>
+    <td>{{ valueByDate.BTC.USD }}</td>
+    <td>{{ dateValue }}</td>     
+   </tr>
+</table>
+{% endif %}
+
+<br>	
+<div style="display: block;width: 55%;margin-left: 25%;">
+ <div class="alert alert-primary" role="alert">
+  <h3>Gráfico dos preços</h3>
+</div>
+ <canvas id="priceBitcoinChart" width="400" height="400"></canvas>
+</div>
+<br>
+<div class="alert alert-primary" role="alert">
+  <h3>Tabela - Preço do bitcoin(Bitcoin-Usd)</h3>
+</div>
+<table class="table">
+  <thead class="thead-dark">
+   <th class="col-3">Date</th>
+   <th class="col-3">Price</th>
+  </thead>
+ {% for k in values %}
+   <tr>
+    <td>{{ k.data|date:"d-m-Y" }}</td>
+    <td>{{ k.preco}}</td>     
+   </tr>
+ {% endfor %}
+</table>
+
+<script type="text/javascript">
+/* Get data from api by time */
+const getBtcData = async () => {
+   fetch('https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=USD')
+  .then(response => response.json())
+  .then(data => {
+    document.getElementById("info").innerHTML = '<b>1 BTC = ' + data.USD + ' USD</b>'
+  });
+}
+getBtcData();
+tcount=setInterval(function(){
+  tcount++
+  if (tcount==10) {getBtcData(); tcount=0}
+  document.getElementById("infotime").innerHTML = 'Next update in ' + (10-tcount) + ' seconds'
+},1000);
+
+<!-- Graphic -->
+const dataSecond = {
+ labels: JSON.parse('{{ dates|safe }}'),
+  datasets: [{
+    label: 'Bitcoin',
+    backgroundColor: 'rgb(5, 200, 220)',
+    borderColor: 'rgb(5, 200, 220)',
+	fill: true,
+    data: JSON.parse('{{ prices|safe }}')
+  }]
+};
+
+const configSecond = {
+  type: 'line',
+  data: dataSecond,
+  options: {
+     plugins: {
+      legend: {
+        labels: {
+          usePointStyle: true,
+        },
+      }
+    }
+   }
+};
+ 
+var bitcoinChart = new Chart(
+    document.getElementById('priceBitcoinChart'),
+    configSecond
+);
+
+/*const labels = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+];*/
+function addDates(){
+ addDay();
+ addMonth();
+ addYear();
+}
+addDates();
+function addDay(){
+	for(var p=1; p<=31; p++){
+	  var opt = document.createElement('option');
+      opt.value = p;
+      opt.innerHTML = p;
+      document.getElementById("txtDay").appendChild(opt);	
+ }
+}
+
+function addMonth(){
+var month = [
+    "janeiro",
+    "fevereiro",
+    "março",
+    "abril",
+    "maio",
+    "junho",
+    "julho",
+    "agosto",
+    "setembro",
+    "outubro",
+    "novembro",
+    "dezembro" 
+ ];
+	for(var p=0; p<12; p++){
+	  var opt = document.createElement('option');
+      opt.value = p+1;
+      opt.innerHTML = month[p];
+      document.getElementById("txtMonth").appendChild(opt);	
+ }
+}
+
+function addYear(){
+	for(var p=1900; p<=3000; p++){
+	  var opt = document.createElement('option');
+      opt.value = p;
+      opt.innerHTML = p;
+      document.getElementById("txtYear").appendChild(opt);	
+}
+}
+function checkFormEmpty(){
+  var points=0;
+  
+  if(document.getElementById("txtDay").value != "Default"){ points+=1; }
+  if(document.getElementById("txtMonth").value != "Default"){ points+=1; }
+  if(document.getElementById("txtYear").value != "Default"){ points+=1; }
+ 
+  return (points == 3) ? $("#checkPrice").css({'display': 'block'}) : $("#checkPrice").css({'display': 'none'});
+}
+</script>
+{% endblock %}
