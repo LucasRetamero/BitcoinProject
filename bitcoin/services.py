@@ -69,5 +69,5 @@ def githubUser(username):
    return response.json()
    
 def savePriceBitcon(valDate, valPrice):
-   b = Bitcoin(data=valDate, price=valPrice)
+   b = Bitcoin(data=valDate, preco=valPrice)
    b.save()

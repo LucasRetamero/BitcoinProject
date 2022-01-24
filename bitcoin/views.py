@@ -13,7 +13,7 @@ import json
 import requests
 import datetime
 from django.conf import settings
-
+from django.utils import timezone
 
 #View
 def home(request):
@@ -30,7 +30,9 @@ def home(request):
 
 def priceBitcoin(request):
  if 'txtYear' in request.GET:
+  cr_date = datetime.datetime(int(request.GET['txtYear']), int(request.GET['txtMonth']), int(request.GET['txtDay']))
   my_datetime = request.GET['txtDay']+"/"+request.GET['txtMonth']+"/"+request.GET['txtYear']
+  my_datetimeShow = cr_date.strftime("%d/%m/%Y")
   valueBitcoin = get_info(my_datetime)
   dates = getPriceAndDatBitcoin("date")
   prices = getPriceAndDatBitcoin("price")
@@ -41,7 +43,7 @@ def priceBitcoin(request):
    'prices': json.dumps(prices),
    'values': getValuesDbBitcoin(),
    'valueByDate': valueBitcoin,
-   "dateValue": my_datetime,
+   "dateValue": my_datetimeShow,
   }
   return render(request, 'priceBitcoin.html', context)
  else: 
