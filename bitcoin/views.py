@@ -1,4 +1,10 @@
 from django.shortcuts import render
+from django.http import JsonResponse
+from django.http import HttpResponse
+from django.core import serializers
+from django.conf import settings
+from django.utils import timezone
+from django.db.models import Func, F, Value, CharField, ExpressionWrapper
 from .services import getPriceAndDatBitcoin
 from .services import get_info
 from .services import getValuesDbBitcoin
@@ -6,14 +12,10 @@ from .services import convertToTimeStamp
 from .services import savePriceBitcon
 from .services import getDevelopmentBtc
 from .services import getDateCloseVolumeBitcoin
-from django.http import JsonResponse
-from django.http import HttpResponse
 from .models import Bitcoin
 import json
 import requests
 import datetime
-from django.conf import settings
-from django.utils import timezone
 
 #View
 def home(request):
@@ -30,6 +32,18 @@ def home(request):
 
 def priceBitcoin(request):
  if 'txtYear' in request.GET:
+  return priceBtcRequest(request)
+ else: 
+  dates = getPriceAndDatBitcoin("date")
+  prices = getPriceAndDatBitcoin("price")
+  context = {
+   'dates':  json.dumps(dates),
+   'prices': json.dumps(prices),
+   'values': getValuesDbBitcoin(),
+  }
+  return render(request, 'priceBitcoin.html', context)
+ 
+def priceBtcRequest(request):
   cr_date = datetime.datetime(int(request.GET['txtYear']), int(request.GET['txtMonth']), int(request.GET['txtDay']))
   my_datetime = request.GET['txtDay']+"/"+request.GET['txtMonth']+"/"+request.GET['txtYear']
   my_datetimeShow = cr_date.strftime("%d/%m/%Y")
@@ -46,18 +60,17 @@ def priceBitcoin(request):
    "dateValue": my_datetimeShow,
   }
   return render(request, 'priceBitcoin.html', context)
- else: 
-  dates = getPriceAndDatBitcoin("date")
-  prices = getPriceAndDatBitcoin("price")
-  context = {
-   'dates':  json.dumps(dates),
-   'prices': json.dumps(prices),
-   'values': getValuesDbBitcoin(),
-  }
-  return render(request, 'priceBitcoin.html', context)
- 
-  #return HttpResponse(json.dumps(get_info()), content_type="application/json")
 
+def priceBitcoinAllData(request):
+ data = {
+   'dataBtc' : serializers.serialize('json', Bitcoin.objects.all()),
+   }
+ #return JsonResponse(data)
+ return HttpResponse(json.dumps(data), content_type="application/json")
+
+def priceBitcoinRemove(request, date):
+ return Bitcoin.objects.get(data = date).delete(); 
+ 
 def developmentBtc(request):
  if 'valTime' in request.POST:
   return HttpResponse(json.dumps(request.POST['valTime']), content_type="application/json")
