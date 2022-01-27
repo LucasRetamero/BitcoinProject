@@ -159,7 +159,7 @@
 			   <tr>
 			    <td> {{ val.data|date:'d/m/Y' }}</td>
 			    <td> {{ val.preco }}</td>
-				<td><a href="{% url 'PriceRemoveData' date=val.data %}" target="_blank"><button type="button" class="btn btn-danger">Remover</button></a></td>
+				<td><button type="button" class="btn btn-danger" onclick="removePriceBitcoin('{{ val.data|date:'Y-m-d' }}')">Remover</button></td>
 			   </tr>
 			  {% endfor %}
 			  <!-- data from ajax -->
@@ -294,8 +294,9 @@ function getAllPriceBitcoin(){
 			 for(i = 0;i < mainObj.length; i++){
 			  var d = new Date(mainObj[i]["fields"]["data"]);
 				event_data += '<tr>';
-                event_data += '<td>'+("0" + (d.getDate() + 1)).slice(-2)+"/"+ ("0" + (d.getMonth() + 1)).slice(-2) + "/" + d.getFullYear()+'</td>';
+                event_data += '<td>'+("0" + (d.getDate() + 1)).slice(-2)+"/"+("0" + (d.getMonth() + 1)).slice(-2) + "/" + d.getFullYear()+'</td>';
                 event_data += '<td>'+mainObj[i]["fields"]["preco"]+'</td>';
+                event_data += '<td><button onclick="removePriceBitcoin(`'+d.getFullYear() +"-"+("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + (d.getDate() + 1)).slice(-2)+'`)" type="button" class="btn btn-danger">Remover</button></td>';
                 event_data += '</tr>';
 			 }
 			 event_data += '</tbody>';
@@ -306,6 +307,22 @@ function getAllPriceBitcoin(){
             alert("404. Please wait load from database.");
         }
     });
+}
+function removePriceBitcoin(dateAll){
+ $.ajax({
+            type: 'get',
+            url: "{% url 'PriceRemoveData' %}",
+			 data: {
+                'date': dateAll
+            },
+			dataType: 'json',
+            success: function (data) {
+			  if(data.deleted){ getAllPriceBitcoin(); }
+            },
+            error: function (data) {
+                console.log(data)
+            }
+        })
 }
 </script>	 
 {% endblock %}

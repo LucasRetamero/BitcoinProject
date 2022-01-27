@@ -68,9 +68,14 @@ def priceBitcoinAllData(request):
  #return JsonResponse(data)
  return HttpResponse(json.dumps(data), content_type="application/json")
 
-def priceBitcoinRemove(request, date):
- return Bitcoin.objects.get(data = date).delete(); 
- 
+def priceBitcoinRemove(request):
+ valueDate = request.GET.get("date", None)
+ Bitcoin.objects.filter(data=valueDate).delete() 
+ data = {
+   'deleted': True
+ }
+ return JsonResponse(data)
+
 def developmentBtc(request):
  if 'valTime' in request.POST:
   return HttpResponse(json.dumps(request.POST['valTime']), content_type="application/json")
