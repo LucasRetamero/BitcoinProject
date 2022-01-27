@@ -6,9 +6,12 @@
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 <link rel="shortcut icon" type="image/x-icon" href="{% static 'img/bitcoinIcon.png' %}"/>
 <script src="{% static 'js/Chart-v3.7.0.js' %}"></script>
-<script src="{% static 'js/jquery-3.2.1.slim.min.js' %}"></script>
+<script src="{% static 'js/jquery-3.6.0.min.js' %}"></script>
 <script src="{% static 'js/bootstrap.min.js' %}"></script>     
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 <title>Bitcoin Info</title>
+{% block stylecss %}
+{% endblock %}
 </head>
 <body>
     <nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
@@ -80,7 +83,7 @@
           </div>
         </nav>     
 		  {% block content %}
-
+		  
           {% endblock %}
         </main>
       </div>
@@ -93,5 +96,9 @@
     <script>
       feather.replace()
     </script>
+	
+	 {% block javascript %}
+	 
+     {% endblock %}
 </body>
 </html>

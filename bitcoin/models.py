@@ -7,7 +7,7 @@ class Bitcoin(models.Model):
     preco = models.DecimalField(max_digits=9, decimal_places=2)
     
     def __str__(self):
-     return "{}-{}".format(self.data, self.preco) 
+     return "{}-{}".format(self.data.strftime("%d-%m-%Y"), self.preco) 
 
 class DevelopmentBitcoin(models.Model):
     data = models.DateField()
