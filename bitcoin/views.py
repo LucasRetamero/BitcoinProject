@@ -45,19 +45,15 @@ def priceBitcoin(request):
  
 def priceBtcRequest(request):
   cr_date = datetime.datetime(int(request.GET['txtYear']), int(request.GET['txtMonth']), int(request.GET['txtDay']))
-  my_datetime = request.GET['txtDay']+"/"+request.GET['txtMonth']+"/"+request.GET['txtYear']
-  my_datetimeShow = cr_date.strftime("%d/%m/%Y")
-  valueBitcoin = get_info(my_datetime)
-  dates = getPriceAndDatBitcoin("date")
-  prices = getPriceAndDatBitcoin("price")
   if 'cbSaveDB' in request.GET:
    savePriceBitcon(request.GET['txtYear']+"-"+request.GET['txtMonth']+"-"+request.GET['txtDay'], valueBitcoin['BTC']['USD'])
   context = {
-   'dates':  json.dumps(dates),
-   'prices': json.dumps(prices),
+   'dates':  json.dumps(getPriceAndDatBitcoin("date")),
+   'prices': json.dumps(getPriceAndDatBitcoin("price")),
    'values': getValuesDbBitcoin(),
-   'valueByDate': valueBitcoin,
-   "dateValue": my_datetimeShow,
+   'valueByDate': get_info(request.GET['txtDay']+"/"+request.GET['txtMonth']+"/"+request.GET['txtYear']),
+   'dateValue': cr_date.strftime("%d/%m/%Y"),
+   'dateToSave': request.GET['txtYear']+"-"+request.GET['txtMonth']+"-"+request.GET['txtDay']
   }
   return render(request, 'priceBitcoin.html', context)
 
@@ -76,6 +72,14 @@ def priceBitcoinRemove(request):
  }
  return JsonResponse(data)
 
+def priceBitcoinSave(request):
+ savePriceBitcon(request.GET.get("date", None), request.GET.get("price", None))
+ data = {
+   'saved': True
+ }
+ return JsonResponse(data)
+ 
+ 
 def developmentBtc(request):
  if 'valTime' in request.POST:
   return HttpResponse(json.dumps(request.POST['valTime']), content_type="application/json")
