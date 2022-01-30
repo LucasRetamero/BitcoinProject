@@ -73,9 +73,43 @@ def priceBitcoinRemove(request):
  return JsonResponse(data)
 
 def priceBitcoinSave(request):
- savePriceBitcon(request.GET.get("date", None), request.GET.get("price", None))
- data = {
+ dataTosave = request.GET.get("year", None)+"-"+request.GET.get("month", None)+"-"+request.GET.get("day", None)
+ if not Bitcoin.objects.all().filter(data=dataTosave).count():
+  savePriceBitcon(dataTosave, request.GET.get("price", None))
+  data = {
+   'dayValue': request.GET.get("day", None),
+   'monthValue': request.GET.get("month", None),
+   'yearValue': request.GET.get("year", None),
    'saved': True
+  }
+  return JsonResponse(data)
+ else:
+  data = {
+   'dayValue': request.GET.get("day", None),
+   'monthValue': request.GET.get("month", None),
+   'yearValue': request.GET.get("year", None),
+   'priceValue': request.GET.get("price", None)
+  }
+  return JsonResponse(data)
+
+def priceBitcoinUpdate(request):
+  updateValue = Bitcoin.objects.get(data=request.GET.get("year", None)+"-"+request.GET.get("month", None)+"-"+request.GET.get("day", None))
+  updateValue.preco = request.GET.get("price", None)
+  updateValue.save()
+  data = { 
+   'dayValue': request.GET.get("day", None),
+   'monthValue': request.GET.get("month", None),
+   'yearValue': request.GET.get("year", None),
+   'updated': True
+  }
+  return JsonResponse(data)
+    
+def priceBitcoinSearchPrice(request):
+ data = {
+  'dayPrice': request.GET.get('txtDay', None),
+  'monthPrice': request.GET.get('txtMonth', None),
+  'yearPrice': request.GET.get('txtYear', None),
+  'valuePrice': get_info(request.GET.get('txtDay', None)+"/"+request.GET.get('txtMonth', None)+"/"+request.GET.get('txtYear', None))
  }
  return JsonResponse(data)
  
