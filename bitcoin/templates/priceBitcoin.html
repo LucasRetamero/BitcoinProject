@@ -69,9 +69,8 @@
   </div> 
  </div> 
 </div>
-
-{% if valueByDate %}   
-<div class="card" id="priceBtc">
+  
+<div class="card" id="priceBtc" style="display: none">
   <div class="card-header bg-primary text-white h4" onclick="showHideGraph('#myChart', '#optionPrice')">
     Resultado da pesquisa pelo preço do Bitcoin
   </div>
@@ -82,59 +81,53 @@
             <span data-feather="dollar-sign" style="width: 35px;height: 35px;"></span>
           </div>
           <div class="text_div">
+            <input type="hidden" id="daySave">
+            <input type="hidden" id="monthSave">
+            <input type="hidden" id="yearSave">
             <span>Preço do Bitcoin</span><br>
-            <span>{{ valueByDate.BTC.USD }}</span>
+            <span id="lblPriceBitcoin"><!-- value here --></span>
           </div>
         </div>
-   <div class="widgets_div">
+    <div class="widgets_div">
           <div class="icon_div">
             <span data-feather="calendar" style="width: 35px;height: 35px;"></span>
           </div>
-          <div class="text_div">
+           <div class="text_div">
             <span>Data da pesquisa</span><br>
-            <span>{{ dateValue }}</span>
-          </div>
-        </div> 
-  <div class="col infoCard">
-   <!-- other text -->
-  </div> 
+            <span id="lblDatePriceBitcoin"><!-- value here --></span>
+           </div>
+	</div>
+   <button id="btnToSavePrice" type="button" class="btn btn-lg btn-block btn-primary text-white">Salvar preço</button>		  
  </div> 
 </div>
   
  </div>
- {% endif %}
  
 <div class="card" style="margin-bottom: 25px;">
   <div class="card-header bg-primary text-white h4" onclick="showHideGraph('#myChart', '#optionPrice')">
     Pesquisar preço do Bitcoin pela data
   </div>
-   <form action="{% url 'Price' %}" method="GET">
   <div class="row">
   <div class="col-3">
     <label for="exampleFormControlSelect1">Dia</label>
-    <select class="form-control" onChange="checkFormEmpty()" id="txtDay" name="txtDay" required>
+    <select class="form-control" id="txtDay" name="txtDay" required>
      <option value="Default" selected>Dia</option>
 	</select>
   </div>
    <div class="col-3">
     <label for="exampleFormControlSelect1">Mês</label>
-    <select class="form-control" onChange="checkFormEmpty()" id="txtMonth" name="txtMonth" required>
+    <select class="form-control" id="txtMonth" name="txtMonth" required>
       <option value="Default" selected>Mês</option>
     </select>
   </div>
    <div class="col-3">
     <label for="exampleFormControlSelect1">Ano</label>
-    <select class="form-control" onChange="checkFormEmpty()" id="txtYear" name="txtYear" required>
+    <select class="form-control" id="txtYear" name="txtYear" required>
       <option value="Default" selected>Ano</option>
     </select>
   </div>
   </div>
-  <div class="form-group form-check">
-   <input type="checkbox" class="form-check-input" id="cbSaveDB" name="cbSaveDB">
-   <label class="form-check-label" for="cbSaveDB">Salvar no banco de dados</label>
-  </div>
-  <button type="submit" class="btn btn-lg btn-block btn-light" style="display:none;" id="checkPrice">Verificar preço</button>
-</form>
+  <button onclick="getPriceBitcoinDate()" type="button" class="btn btn-lg btn-block btn-primary text-white" id="checkPrice" style="margin-top: 15px;">Verificar preço</button>
  </div>
  
 <div class="card" id="priceBtc">
@@ -157,21 +150,143 @@
               <tbody>
 			  {% for val in values %}
 			   <tr>
-			    <td> {{ val.data|date:'d/m/Y' }}</td>
-			    <td> {{ val.preco }}</td>
-				<td><button type="button" class="btn btn-danger" onclick="removePriceBitcoin('{{ val.data|date:'Y-m-d' }}')">Remover</button></td>
+			    <td>{{ val.data|date:'d/m/Y' }}</td>
+			    <td>{{ val.preco }}</td>
+				<td><button onclick="createFormToUpdate('{{ val.data|date:'d' }}', '{{ val.data|date:'m' }}', '{{ val.data|date:'Y' }}', '{{ val.preco }}')" type="button" class="btn btn-warning"><span data-feather="edit"></span> Editar</button></td>
+				<td><button onclick="addBtnAndTitleToRemove('{{ val.data|date:'d/m/Y' }}', '{{ val.data|date:'Y-m-d' }}')" data-toggle="modal" data-target="#infomationModel"type="button" class="btn btn-danger"><span data-feather="trash-2"></span> Remover</button></td>
+				<!--<td><button type="button" class="btn btn-danger" onclick="removePriceBitcoin('{{ val.data|date:'Y-m-d' }}')">Remover</button></td>-->
 			   </tr>
 			  {% endfor %}
 			  <!-- data from ajax -->
               </tbody>
             </table>
           </div>
-		 
-
+<!-- Modal -->
+<div class="modal fade" id="infomationModel" tabindex="-1" role="dialog"  aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel"><!-- Here the text--></h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p id="msgOutputRemove" style="font-size:15px;"><!-- Text here --></p>
+      </div>
+      <div id="btnActionRemove" class="modal-footer">
+        <button type="button" class="btn btn-primary" data-dismiss="modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="infomationModelToUpdate" tabindex="-1" role="dialog"  aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><b>Atualizar Preço</b></h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div id="formToUpdate" class="modal-body">
+	   <i>* = Campo editavel</i>
+        <div class="row">
+  <div class="col-3">
+    <label for="txtDayUpdate">Dia</label>
+    <input type="text" class="form-control" id="txtDayUpdate" style="background-color: white;" readonly>
+  </div>
+   <div class="col-3">
+    <label for="txtMonthUpdate">Mês</label>
+    <input type="text" class="form-control" id="txtMonthUpdate" style="background-color: white;" readonly>
+  </div>
+   <div class="col-3">
+    <label for="txtYearUpdate">Ano</label>
+	<input type="text" class="form-control" id="txtYearUpdate" style="background-color: white;" readonly>
+  </div>
+  </div>
+  <div class="form-group">
+    <label for="txtPriceUpdate">Preço(*)</label>
+    <input type="text" class="form-control" id="txtPriceUpdate">
+  </div>
+      </div>
+      <div id="addButtonsUpdate" class="modal-footer">
+        <button type="button" class="btn btn-primary" data-dismiss="modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block javascript %}
 <script type="text/javascript">
+var myChart;
+
+function addBtnAndTitleToRemove(title, dataValue){
+  $('#infomationModel').modal('show')
+ document.getElementById("exampleModalLabel").innerHTML = "Remover data: "+title+" ?";
+ document.getElementById("msgOutputRemove").innerHTML = "Deseja realmente remover essa data?";
+  if(document.getElementById("btnRemoveRowTable") == null){
+   let btn = document.createElement("button");
+   btn.innerHTML = "Remover";
+   btn.type = "button";
+   btn.id = "btnRemoveRowTable";
+   btn.className = "btn btn-danger";
+   btn.onclick = function () {
+   removePriceBitcoin(dataValue);
+   document.getElementById("btnRemoveRowTable").remove();
+   document.getElementById("exampleModalLabel").innerHTML = "Data removida";
+   document.getElementById("msgOutputRemove").innerHTML = "Data excluida com sucesso !";
+};
+   document.getElementById("btnActionRemove").appendChild(btn);
+ }
+}
+
+function addBtnToUpdateCaseTryAdd(dayDate, monthDate, yearDate, priceValue){
+ $('#infomationModel').modal('show')
+ document.getElementById("exampleModalLabel").innerHTML = "Data "+("0" + dayDate).slice(-2)+"/"+("0" + monthDate).slice(-2)+"/"+yearDate+" já existe no banco de dados!";
+ document.getElementById("msgOutputRemove").innerHTML = "Desejar atualizar a data com esse preço: "+priceValue+" ?";
+ if(document.getElementById("btnUpdateRowTable") == null){
+ let btn = document.createElement("button");
+   btn.innerHTML = "Atualizar dados";
+   btn.type = "button";
+   btn.id = "btnUpdateRowTable";
+   btn.className = "btn btn-warning";
+   btn.onclick = function () {
+   updatePriceBitcoin(dayDate, monthDate, yearDate, priceValue);
+   document.getElementById("btnUpdateRowTable").remove();
+   $('#infomationModel').modal('hide');
+   createFormToUpdate(dayDate, monthDate, yearDate, priceValue);
+  };
+   document.getElementById("btnActionRemove").appendChild(btn);
+ }
+}
+
+function createFormToUpdate(dayDate, monthDate, yearDate, priceValue){
+ $('#infomationModelToUpdate').modal('show');
+ $('#txtDayUpdate').val(('0' + dayDate).slice(-2));
+ $('#txtMonthUpdate').val(('0' + monthDate).slice(-2));
+ $('#txtYearUpdate').val(yearDate);
+ $('#txtPriceUpdate').val(priceValue);
+ if(document.getElementById("btnUpdateTableData") == null){
+ let btn = document.createElement("button");
+   btn.innerHTML = '<span data-feather="edit"></span>'+' Atualizar dados';
+   btn.type = "button";
+   btn.id = "btnUpdateTableData";
+   btn.className = "btn btn-warning";
+   btn.onclick = function (){
+   updatePriceBitcoin($("#txtDayUpdate").val(), $("#txtMonthUpdate").val(), $("#txtYearUpdate").val(), $("#txtPriceUpdate").val()); 
+   document.getElementById("exampleModalLabel").innerHTML = "Data "+$("#txtDayUpdate").val()+"/"+ $("#txtMonthUpdate").val()+"/"+$("#txtYearUpdate").val()+" atualizada !";
+   document.getElementById("msgOutputRemove").innerHTML = "Data e preço atualizado com sucesso !";
+   document.getElementById("btnUpdateTableData").remove();
+   $('#infomationModelToUpdate').modal('hide');
+   $('#infomationModel').modal('show');
+   if(document.getElementById("btnRemoveRowTable") != null ){document.getElementById("btnRemoveRowTable").remove();}
+  };
+   document.getElementById("addButtonsUpdate").appendChild(btn);
+ }
+}
+
 /* Get data from api by time */
 const getBtcData = async () => {
    fetch('https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=USD')
@@ -189,15 +304,17 @@ tcount=setInterval(function(){
   }
 },1000);
 
+function createGraph(dateValue, priceValue){
 // Graphic of price from bitcoin
+ if(myChart != null){ myChart.destroy(); }
  var ctx = document.getElementById("myChart");
-      var myChart = new Chart(ctx, {
+      myChart = new Chart(ctx, {
         type: 'line',
         data: {
-          labels: JSON.parse('{{ dates|safe }}'),
+          labels: (dateValue == null && priceValue == null) ? {{ dates|safe }} : JSON.parse(dateValue.toString()) ,
           datasets: [{
 		    label: ' Preço do Bitcoin',
-            data: JSON.parse('{{ prices|safe }}'),
+            data: (dateValue == null && priceValue == null) ? {{ prices|safe }} : JSON.parse(priceValue.toString()),
             lineTension: 0,
             backgroundColor: 'transparent',
             borderColor: '#007bff',
@@ -211,15 +328,8 @@ tcount=setInterval(function(){
           },      
         }
       });
-
-/*const labels = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-];*/
+}
+createGraph(null, null);
 function addDates(){
  addDay();
  addMonth();
@@ -259,13 +369,14 @@ var month = [
 }
 
 function addYear(){
-	for(var p=1900; p<=3000; p++){
+	for(var p=2009; p<=3000; p++){
 	  var opt = document.createElement('option');
       opt.value = p;
       opt.innerHTML = p;
       document.getElementById("txtYear").appendChild(opt);	
 }
 }
+
 function checkFormEmpty(){
   var points=0;
   
@@ -280,6 +391,7 @@ function showHideGraph(option, tztOption){
   ($(tztOption).text() == "-") ? $(tztOption).html('+') : $(tztOption).html('-');
   $(option).toggle();
 }
+
 function getAllPriceBitcoin(){
     $.ajax({
         url: "{% url 'PriceAllData' %}",
@@ -296,11 +408,13 @@ function getAllPriceBitcoin(){
 				event_data += '<tr>';
                 event_data += '<td>'+("0" + (d.getDate() + 1)).slice(-2)+"/"+("0" + (d.getMonth() + 1)).slice(-2) + "/" + d.getFullYear()+'</td>';
                 event_data += '<td>'+mainObj[i]["fields"]["preco"]+'</td>';
-                event_data += '<td><button onclick="removePriceBitcoin(`'+d.getFullYear() +"-"+("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + (d.getDate() + 1)).slice(-2)+'`)" type="button" class="btn btn-danger">Remover</button></td>';
+                event_data += '<td><button onclick="createFormToUpdate('+("0"+(d.getDate() + 1)).slice(-2)+','+("0" + (d.getMonth() + 1)).slice(-2)+','+d.getFullYear()+','+mainObj[i]["fields"]["preco"]+')" type="button" class="btn btn-warning"><span data-feather="edit"></span> Editar</button></td>';
+                event_data += '<td><button onclick="addBtnAndTitleToRemove(`'+("0" + (d.getDate() + 1)).slice(-2)+"/"+("0" + (d.getMonth() + 1)).slice(-2) + "/" + d.getFullYear()+'`'+','+'`'+d.getFullYear() +"-"+("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + (d.getDate() + 1)).slice(-2)+'`)" type="button" class="btn btn-danger">Remover</button></td>';
                 event_data += '</tr>';
 			 }
 			 event_data += '</tbody>';
             $("#bitcoinPrice").append(event_data);
+			getDateUpdateGraph();
         },
         error: function(d){
             /*console.log("error");*/
@@ -308,6 +422,7 @@ function getAllPriceBitcoin(){
         }
     });
 }
+
 function removePriceBitcoin(dateAll){
  $.ajax({
             type: 'get',
@@ -324,7 +439,100 @@ function removePriceBitcoin(dateAll){
             }
         })
 }
+
+function savePriceBitcoin(){
+ $.ajax({
+            type: 'get',
+            url: "{% url 'PriceSaveData' %}",
+			 data: {
+                'day': $("#daySave").text(),
+                'month': $("#monthSave").text(),
+                'year': $("#yearSave").text(),
+                'price': $("#lblPriceBitcoin").text()
+            },
+			dataType: 'json',
+            success: function (data) {			
+			  if(data.saved){
+			   $('#infomationModel').modal('show')
+               document.getElementById("exampleModalLabel").innerHTML = "Data "+("0" + data.dayValue).slice(-2)+"/"+("0" + data.monthValue).slice(-2)+"/"+data.yearValue+" cadastrada com sucesso !";
+               document.getElementById("msgOutputRemove").innerHTML = "Data e preço cadastrado com sucesso !";	
+			  }else{
+               addBtnToUpdateCaseTryAdd(data.dayValue, data.monthValue, data.yearValue, data.priceValue);		   
+			  }
+			  getAllPriceBitcoin();
+            },
+            error: function (data) {
+                console.log(data)
+            }
+        })
+}
+
+function updatePriceBitcoin(dayDate, monthDate, yearDate, priceValue){
+  $.ajax({
+            type: 'get',
+            url: "{% url 'PriceUpdateData' %}",
+			 data: {
+                'day': dayDate,
+                'month': monthDate,
+                'year': yearDate,
+                'price': priceValue
+            },
+			dataType: 'json',
+            success: function (data) {			
+			  if(data.updated){
+			   $('#infomationModel').modal('show')
+               document.getElementById("exampleModalLabel").innerHTML = "Data "+("0" + data.dayValue).slice(-2)+"/"+("0" + data.monthValue).slice(-2)+"/"+data.yearValue+" atualizada com sucesso !";
+               document.getElementById("msgOutputRemove").innerHTML = "Data e preço atualizado com sucesso !";	
+			  }
+			  getAllPriceBitcoin();
+            },
+            error: function (data) {
+                console.log(data)
+            }
+        })
+}
+
+function getPriceBitcoinDate(){
+  $.ajax({
+            type: 'get',
+            url: "{% url 'PriceSearchData' %}",
+			 data: {
+                'txtDay': document.getElementById("txtDay").value,
+                'txtMonth': document.getElementById("txtMonth").value,
+                'txtYear': document.getElementById("txtYear").value
+            },
+			dataType: 'json',
+            success: function (data) {
+			  $("#priceBtc").css({'display': 'block'});
+			  $("#lblPriceBitcoin").text(data.valuePrice.BTC.USD);
+			  $("#lblDatePriceBitcoin").text(("0" + data.dayPrice).slice(-2)+"/"+("0" + data.monthPrice).slice(-2)+"/"+data.yearPrice);
+			  $("#daySave").text(data.dayPrice);
+			  $("#monthSave").text(data.monthPrice);
+			  $("#yearSave").text(data.yearPrice);
+            },
+            error: function (data) {
+                console.log(data)
+            }
+        })
+}
+
+function getDateUpdateGraph(){
+  $.ajax({
+            type: 'get',
+            url: "{% url 'PriceAllDataGraph' %}",
+			data: {},
+			dataType: 'json',
+            success: function (data) {
+			 createGraph(data.dates, data.prices);
+            },
+            error: function (data) {
+                console.log(data)
+            }
+        })
+}
+
+$("#btnToSavePrice").on("click", function() {
+ savePriceBitcoin();
+});
 </script>	 
 {% endblock %}
-
-<!--https://stackoverflow.com/questions/3805958/how-to-delete-a-record-in-django-models-->

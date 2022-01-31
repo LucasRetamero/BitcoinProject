@@ -45,19 +45,15 @@ def priceBitcoin(request):
  
 def priceBtcRequest(request):
   cr_date = datetime.datetime(int(request.GET['txtYear']), int(request.GET['txtMonth']), int(request.GET['txtDay']))
-  my_datetime = request.GET['txtDay']+"/"+request.GET['txtMonth']+"/"+request.GET['txtYear']
-  my_datetimeShow = cr_date.strftime("%d/%m/%Y")
-  valueBitcoin = get_info(my_datetime)
-  dates = getPriceAndDatBitcoin("date")
-  prices = getPriceAndDatBitcoin("price")
   if 'cbSaveDB' in request.GET:
    savePriceBitcon(request.GET['txtYear']+"-"+request.GET['txtMonth']+"-"+request.GET['txtDay'], valueBitcoin['BTC']['USD'])
   context = {
-   'dates':  json.dumps(dates),
-   'prices': json.dumps(prices),
+   'dates':  json.dumps(getPriceAndDatBitcoin("date")),
+   'prices': json.dumps(getPriceAndDatBitcoin("price")),
    'values': getValuesDbBitcoin(),
-   'valueByDate': valueBitcoin,
-   "dateValue": my_datetimeShow,
+   'valueByDate': get_info(request.GET['txtDay']+"/"+request.GET['txtMonth']+"/"+request.GET['txtYear']),
+   'dateValue': cr_date.strftime("%d/%m/%Y"),
+   'dateToSave': request.GET['txtYear']+"-"+request.GET['txtMonth']+"-"+request.GET['txtDay']
   }
   return render(request, 'priceBitcoin.html', context)
 
@@ -76,6 +72,55 @@ def priceBitcoinRemove(request):
  }
  return JsonResponse(data)
 
+def priceBitcoinSave(request):
+ dataTosave = request.GET.get("year", None)+"-"+request.GET.get("month", None)+"-"+request.GET.get("day", None)
+ if not Bitcoin.objects.all().filter(data=dataTosave).count():
+  savePriceBitcon(dataTosave, request.GET.get("price", None))
+  data = {
+   'dayValue': request.GET.get("day", None),
+   'monthValue': request.GET.get("month", None),
+   'yearValue': request.GET.get("year", None),
+   'saved': True
+  }
+  return JsonResponse(data)
+ else:
+  data = {
+   'dayValue': request.GET.get("day", None),
+   'monthValue': request.GET.get("month", None),
+   'yearValue': request.GET.get("year", None),
+   'priceValue': request.GET.get("price", None)
+  }
+  return JsonResponse(data)
+
+def priceBitcoinUpdate(request):
+  updateValue = Bitcoin.objects.get(data=request.GET.get("year", None)+"-"+request.GET.get("month", None)+"-"+request.GET.get("day", None))
+  updateValue.preco = request.GET.get("price", None)
+  updateValue.save()
+  data = { 
+   'dayValue': request.GET.get("day", None),
+   'monthValue': request.GET.get("month", None),
+   'yearValue': request.GET.get("year", None),
+   'updated': True
+  }
+  return JsonResponse(data)
+    
+def priceBitcoinSearchPrice(request):
+ data = {
+  'dayPrice': request.GET.get('txtDay', None),
+  'monthPrice': request.GET.get('txtMonth', None),
+  'yearPrice': request.GET.get('txtYear', None),
+  'valuePrice': get_info(request.GET.get('txtDay', None)+"/"+request.GET.get('txtMonth', None)+"/"+request.GET.get('txtYear', None))
+ }
+ return JsonResponse(data)
+
+def priceBitcoinDateAllPrice(request):
+ data = {
+  'dates':  json.dumps(getPriceAndDatBitcoin("date")),
+  'prices': json.dumps(getPriceAndDatBitcoin("price"))
+ }
+ return JsonResponse(data)
+ 
+ 
 def developmentBtc(request):
  if 'valTime' in request.POST:
   return HttpResponse(json.dumps(request.POST['valTime']), content_type="application/json")
