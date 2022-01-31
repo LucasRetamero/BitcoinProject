@@ -9,6 +9,7 @@ urlpatterns = [
     path('priceBitcoin/saveData/', views.priceBitcoinSave, name='PriceSaveData'),
     path('priceBitcoin/updateData/', views.priceBitcoinUpdate, name='PriceUpdateData'),
     path('priceBitcoin/searchPriceBitcoin/', views.priceBitcoinSearchPrice, name='PriceSearchData'),
+    path('priceBitcoin/GetAllDataGraph/', views.priceBitcoinDateAllPrice, name='PriceAllDataGraph'),
     path('saveDevBtc/<str:date>/<str:close>/<str:volume>', views.saveOneDevBtc, name='savedevelopmentbtc'),
     path('developmentBitcoin', views.developmentBtc, name='Development'),
     ]

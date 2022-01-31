@@ -112,6 +112,13 @@ def priceBitcoinSearchPrice(request):
   'valuePrice': get_info(request.GET.get('txtDay', None)+"/"+request.GET.get('txtMonth', None)+"/"+request.GET.get('txtYear', None))
  }
  return JsonResponse(data)
+
+def priceBitcoinDateAllPrice(request):
+ data = {
+  'dates':  json.dumps(getPriceAndDatBitcoin("date")),
+  'prices': json.dumps(getPriceAndDatBitcoin("price"))
+ }
+ return JsonResponse(data)
  
  
 def developmentBtc(request):
