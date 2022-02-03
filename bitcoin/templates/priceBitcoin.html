@@ -97,10 +97,9 @@
             <span id="lblDatePriceBitcoin"><!-- value here --></span>
            </div>
 	</div>
-   <button id="btnToSavePrice" type="button" class="btn btn-lg btn-block btn-primary text-white">Salvar preço</button>		  
- </div> 
+  </div> 
 </div>
-  
+   <button id="btnToSavePrice" type="button" class="btn btn-block btn-primary text-white w-50 mx-auto" style="margin-bottom: 25px;">Salvar preço</button>		  
  </div>
  
 <div class="card" style="margin-bottom: 25px;">
@@ -110,24 +109,24 @@
   <div class="row">
   <div class="col-3">
     <label for="exampleFormControlSelect1">Dia</label>
-    <select class="form-control" id="txtDay" name="txtDay" required>
+    <select class="form-control" id="txtDay" required>
      <option value="Default" selected>Dia</option>
 	</select>
   </div>
    <div class="col-3">
     <label for="exampleFormControlSelect1">Mês</label>
-    <select class="form-control" id="txtMonth" name="txtMonth" required>
+    <select class="form-control" id="txtMonth" required>
       <option value="Default" selected>Mês</option>
     </select>
   </div>
    <div class="col-3">
     <label for="exampleFormControlSelect1">Ano</label>
-    <select class="form-control" id="txtYear" name="txtYear" required>
+    <select class="form-control" id="txtYear" required>
       <option value="Default" selected>Ano</option>
     </select>
   </div>
   </div>
-  <button onclick="getPriceBitcoinDate()" type="button" class="btn btn-lg btn-block btn-primary text-white" id="checkPrice" style="margin-top: 15px;">Verificar preço</button>
+  <button type="button" class="btn btn-lg btn-primary text-white w-50 mx-auto" id="checkPrice" style="margin-top: 15px;">Verificar preço</button>
  </div>
  
 <div class="card" id="priceBtc">
@@ -275,6 +274,7 @@ function createFormToUpdate(dayDate, monthDate, yearDate, priceValue){
    btn.id = "btnUpdateTableData";
    btn.className = "btn btn-warning";
    btn.onclick = function (){
+   if(checkBeforeUpdate()){
    updatePriceBitcoin($("#txtDayUpdate").val(), $("#txtMonthUpdate").val(), $("#txtYearUpdate").val(), $("#txtPriceUpdate").val()); 
    document.getElementById("exampleModalLabel").innerHTML = "Data "+$("#txtDayUpdate").val()+"/"+ $("#txtMonthUpdate").val()+"/"+$("#txtYearUpdate").val()+" atualizada !";
    document.getElementById("msgOutputRemove").innerHTML = "Data e preço atualizado com sucesso !";
@@ -282,6 +282,7 @@ function createFormToUpdate(dayDate, monthDate, yearDate, priceValue){
    $('#infomationModelToUpdate').modal('hide');
    $('#infomationModel').modal('show');
    if(document.getElementById("btnRemoveRowTable") != null ){document.getElementById("btnRemoveRowTable").remove();}
+    }
   };
    document.getElementById("addButtonsUpdate").appendChild(btn);
  }
@@ -375,16 +376,6 @@ function addYear(){
       opt.innerHTML = p;
       document.getElementById("txtYear").appendChild(opt);	
 }
-}
-
-function checkFormEmpty(){
-  var points=0;
-  
-  if(document.getElementById("txtDay").value != "Default"){ points+=1; }
-  if(document.getElementById("txtMonth").value != "Default"){ points+=1; }
-  if(document.getElementById("txtYear").value != "Default"){ points+=1; }
- 
-  return (points == 3) ? $("#checkPrice").css({'display': 'block'}) : $("#checkPrice").css({'display': 'none'});
 }
 
 function showHideGraph(option, tztOption){
@@ -531,8 +522,46 @@ function getDateUpdateGraph(){
         })
 }
 
+function checkGetPrice(){
+ var points = 3;
+  if($("#txtDay").val() != "Default"){ points-=1; }
+  if($("#txtMonth").val() != "Default"){ points-=1; }
+  if($("#txtYear").val() != "Default"){ points-=1; }
+  return (points == 0) ? true : alert("Preencha todos os campos antes de consultar !"); 
+}
+
+function checkBeforeUpdate(){
+ var points = 4;
+  if($("#txtDayUpdate").val() != ""){ points-=1; }
+  if($("#txtMonthUpdate").val() != ""){ points-=1; }
+  if($("#txtYearUpdate").val() != ""){ points-=1; }
+  if($("#txtPriceUpdate").val() != ""){ points-=1; }
+  
+  return (points == 0) ? true : alert("Preencha todos os campos antes de consultar !"); 
+}
+
 $("#btnToSavePrice").on("click", function() {
  savePriceBitcoin();
 });
+
+$("#checkPrice").on("click", function(){
+ if(checkGetPrice()){ getPriceBitcoinDate(); }
+});
+
+$("#txtPriceUpdate").on("keyup",function() {
+   console.log(getTxtPriceUpdate().length);
+   setTxtPriceUpdate( parseFloat(getTxtPriceUpdate().replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1').slice(0,12)));
+   //if(getTxtPriceUpdate().length < 4){ getTxtPriceUpdate().replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1').slice(0,12) }
+   //else{ setTxtPriceUpdate( Number(getTxtPriceUpdate().replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1').slice(0,12)).toFixed(2)) };
+});
+
+function getTxtPriceUpdate(){
+ return document.getElementById("txtPriceUpdate").value;
+}
+
+function setTxtPriceUpdate(valuePar){
+ return document.getElementById("txtPriceUpdate").value = valuePar;
+}
+
 </script>	 
 {% endblock %}
