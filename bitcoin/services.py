@@ -7,7 +7,7 @@ from .models import DevelopmentBitcoin
 import time
 import datetime
 
-#Services
+# --------- API Call ---------------
 def get_info(valueData):
   result = {}
   endpoint = 'https://min-api.cryptocompare.com/data/pricehistorical?fsym=BTC&tsyms=USD&ts=%s' % convertToTimeStamp(valueData)
@@ -24,9 +24,9 @@ def get_info(valueData):
      result['message'] = 'The CryptoCompate API is not available at the moment.'
   return result
 
-def getDevelopmentBtc():
+def getDevelopmentBtc(toLimit, toTs):
   result = {}
-  endpoint = 'https://min-api.cryptocompare.com/data/v2/histoday?fsym=BTC&tsym=USD&limit=10'
+  endpoint = 'https://min-api.cryptocompare.com/data/v2/histoday?fsym=BTC&tsym=USD&limit=%s&toTs=%s' % (toLimit,convertToTimeStamp(toTs))
   headers = {'authorization': settings.CRYPTOCOMPATE_APP_KEY}
   response = requests.get(endpoint, headers=headers)
   if response.status_code == 200:  # SUCCESS
@@ -39,7 +39,8 @@ def getDevelopmentBtc():
     else:
      result['message'] = 'The CryptoCompate API is not available at the moment.'
   return result
-  
+
+# --------- DATABASE Call ---------------  
 def getPriceAndDatBitcoin(option):
    queryset = Bitcoin.objects.all()
    if option == "date":
@@ -59,15 +60,22 @@ def getDateCloseVolumeBitcoin(option):
 def getValuesDbBitcoin():
   return Bitcoin.objects.all()
 
-def convertToTimeStamp(valueData):
-  return int(time.mktime(datetime.datetime.strptime(valueData,"%d/%m/%Y").timetuple()))
-
-#Get api with parameter on request
-def githubUser(username):
-   url = 'https://api.github.com/users/%s' % username
-   response = requests.get(url)
-   return response.json()
-   
 def savePriceBitcon(valDate, valPrice):
    b = Bitcoin(data=valDate, preco=valPrice)
    b.save()
+
+def saveDevelopmentBitcoin(valDate, valClose, valVolume):
+ s = DevelopmentBitcoin(data=valDate, ultimo=valClose, volume=valVolume)
+ s.save()
+
+def updateDevelopmentBitcoin(valDate, valClose, valVolume):
+  updateValue = DevelopmentBitcoin.objects.get(data=valDate)
+  updateValue.ultimo = valClose
+  updateValue.volume = valVolume
+  updateValue.save()
+  
+# -------- Convert input ----------
+  
+def convertToTimeStamp(valueData):
+  return int(time.mktime(datetime.datetime.strptime(valueData,"%d/%m/%Y").timetuple()))
+   

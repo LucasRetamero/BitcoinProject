@@ -16,7 +16,40 @@
               </button>
             </div>-->
           </div>
-		 
+
+<div class="card" style="margin-bottom: 25px;">
+  <div class="card-header bg-primary text-white h4" onclick="showHideGraph('#myChart', '#optionPrice')">
+    Pesquisar desenvolvimento do Bitcoin pela data
+  </div>
+  <div class="row">
+  <div class="col-3">
+    <label for="exampleFormControlSelect1">Dia</label>
+    <select class="form-control" id="txtDay" required>
+     <option value="Default" selected>Dia</option>
+	</select>
+  </div>
+   <div class="col-3">
+    <label for="exampleFormControlSelect1">Mês</label>
+    <select class="form-control" id="txtMonth" required>
+      <option value="Default" selected>Mês</option>
+    </select>
+  </div>
+   <div class="col-3">
+    <label for="exampleFormControlSelect1">Ano</label>
+    <select class="form-control" id="txtYear" required>
+      <option value="Default" selected>Ano</option>
+    </select>
+  </div>
+  <div class="col-3">
+    <label for="exampleFormControlSelect1">Quantidade</label>
+    <select class="form-control" id="txtQtty" required>
+      <option value="Default" selected>Quantidade</option>
+    </select>
+  </div>
+  </div>
+  <button id="btnSearchDevelopment" type="button" class="btn btn-lg btn-primary text-white w-50 mx-auto" id="checkPrice" style="margin-top: 15px;">Verificar desenvolvimento</button>
+ </div>
+ 
 <div class="card" id="devBtc">
   <div class="card-header bg-primary text-white h4" onclick="showHideGraph('#DevelopmentBtc', '#optionDevPrice')">
     Desenvolvimento do Bitcoin  <span id="optionDevPrice" style="float: right;font-weight: bold;">-</span>
@@ -24,24 +57,28 @@
  <canvas class="my-4 w-100" id="DevelopmentBtc" width="900" height="380"></canvas>
 </div>
 
-<div class="card" id="devBtc">
-  <div class="card-header bg-primary text-white h4" onclick="showHideGraph('#DevelopmentBtc', '#optionDevPrice')">
-    Lista do desenvolvimento do Bitcoin(Api)
+<div class="card" id="listDevBtc" style="display: none;">
+  <div class="card-header bg-primary text-white h4" onclick="showAndHide('#tbDevBtcFromApi', '#lblDevFromApi')">
+    Lista do desenvolvimento do Bitcoin(Api)<span id="lblDevFromApi" style="float: right;font-weight: bold;">-</span>
   </div>
-  <div class="table-responsive">
+  <div id="tbDevBtcFromApi" class="table-responsive">
             <table class="table table-striped table-sm">
               <thead>
                 <tr>
                   <th>Data Inicial</th>
                   <th>Data Final</th>
+                  <th>Quantidade</th>
+                  <th>Menu</th>
                 </tr>
               </thead>
               <tbody>
                <tr>
-              <td>{{ valueDev.Data.TimeFrom|print_timestamp|date:"d-m-Y" }}</td>
-              <td>{{ valueDev.Data.TimeTo|print_timestamp|date:"d-m-Y" }}</td>
-               </tr>
-			   <table class="table table-striped table-sm">
+              <td id="txtTimeFrom"><!--{{ valueDev.Data.TimeFrom|print_timestamp|date:"d-m-Y" }}--></td>
+              <td id="txtTimeTo"><!--{{ valueDev.Data.TimeTo|print_timestamp|date:"d-m-Y" }}--></td>
+              <td id="txtQuantity"><!--{{ valueDev.Data.TimeTo|print_timestamp|date:"d-m-Y" }}--></td>
+              <td><button id="btnSaveAllDevelopment" type="button" class="btn btn-primary text-white">Salvar Tudo</button></td>
+			  </tr>
+			   <table id="tbListDevPrice" class="table table-striped table-sm">
               <thead>
                 <tr>
                   <th>Data</th>
@@ -50,31 +87,126 @@
                 </tr>
               </thead>
               <tbody>
-			   {% for val in valueDev.Data.Data %}
+			   <!--{% for val in valueDev.Data.Data %}
                <tr>
               <td>{{ val.time|print_timestamp|date:"d-m-Y"  }}</td>
               <td>{{ val.close  }}</td>
               <td>{{ val.volumefrom  }}</td>
                 </tr>
-                 {% endfor %}
+                 {% endfor %}-->
                 </tbody>
                </table>
               </tbody>
             </table>
           </div>
  </div>
+
+<div class="card" id="listDevBtcFromDB">
+  <div class="card-header bg-primary text-white h4" onclick="showAndHide('#tbDevBtcFromDb', '#lblDevFromDb')">
+    Lista do desenvolvimento do Bitcoin(Database)<span id="lblDevFromDb" style="float: right;font-weight: bold;">-</span>
+  </div>
+  <div id="tbDevBtcFromDb"class="table-responsive">
+            <table class="table table-striped table-sm">
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Ultimo</th>
+                  <th>Volume</th>
+                </tr>
+              </thead>
+              <tbody>
+			  {% for valueDev in allData %}
+               <tr>
+              <td>{{ valueDev.data|date:"d-m-Y" }}</td>
+              <td>{{ valueDev.ultimo }}</td>
+              <td>{{ valueDev.volume }}</td>
+              </tr>
+			  {% endfor %}
+			  </tbody>
+            </table>
+          </div>
+ </div>
 <!--<td><a href="url 'savedevelopmentbtc' date=val.time|print_timestamp|date:'d-m-Y' close=val.close volume=val.volumefrom  " target="_blank"><button type="button" class="btn bg-primary text-white">Save</button></td>-->
-                 
+{% endblock %}
+ 
+{% block javascript %} 
 <script type="text/javascript">
-<!-- Development of Bitcoin -->
-      var ctxTwo = document.getElementById("DevelopmentBtc");
-      var myChartTwo = new Chart(ctxTwo, {
+var graphCanvas;
+
+function addDates(){
+ addDay();
+ addMonth();
+ addYear();
+ addQuantity();
+}
+
+function addDay(){
+	for(var p=1; p<=31; p++){
+	  var opt = document.createElement('option');
+      opt.value = p;
+      opt.innerHTML = p;
+      document.getElementById("txtDay").appendChild(opt);	
+ }
+}
+
+function addMonth(){
+var month = [
+    "janeiro",
+    "fevereiro",
+    "março",
+    "abril",
+    "maio",
+    "junho",
+    "julho",
+    "agosto",
+    "setembro",
+    "outubro",
+    "novembro",
+    "dezembro" 
+ ];
+	for(var p=0; p<12; p++){
+	  var opt = document.createElement('option');
+      opt.value = p+1;
+      opt.innerHTML = month[p];
+      document.getElementById("txtMonth").appendChild(opt);	
+ }
+}
+
+function addYear(){
+	for(var p=2009; p<=3000; p++){
+	  var opt = document.createElement('option');
+      opt.value = p;
+      opt.innerHTML = p;
+      document.getElementById("txtYear").appendChild(opt);	
+ }
+}
+function addQuantity(){
+	for(var p=1; p<=2000; p++){
+	  var opt = document.createElement('option');
+      opt.value = p;
+      opt.innerHTML = p;
+      document.getElementById("txtQtty").appendChild(opt);	
+ }
+}
+
+function checkSearchingDevBtc(){
+ var points = 4;
+  if($("#txtDay").val() != "Default"){ points--; }
+  if($("#txtMonth").val() != "Default"){ points--; }
+  if($("#txtYear").val() != "Default"){ points--; }
+  if($("#txtQtty").val() != "Default"){ points--; }
+ return (points == 0) ?  true : alert("Um ou mais campos sem seleção !");
+}
+
+function showGraph(dates, closes, volumes){
+ var ctx = document.getElementById("DevelopmentBtc");
+     graphCanvas = new Chart(ctx, {
         type: 'line',
         data: {
-          labels: JSON.parse('{{ dates|safe }}'),
+          labels: (dates == null ) ? JSON.parse('{{ dates|safe }}') : dates,
           datasets: [{
 		    label: ' Fechamento do Bitcoin',
-            data: JSON.parse('{{ closes|safe }}'),
+            data: (closes == null ) ? JSON.parse('{{ closes|safe }}') : closes,
             lineTension: 0,
             backgroundColor: 'transparent',
             borderColor: '#007bff',
@@ -83,7 +215,7 @@
           },
 		  {
 		    label: ' Volume do Bitcoin',
-            data: JSON.parse('{{ volumes|safe }}'),
+            data: (volumes == null ) ? JSON.parse('{{ volumes|safe }}') : volumes,
             lineTension: 0,
             backgroundColor: 'transparent',
             borderColor: '#ff1a1a',
@@ -97,5 +229,59 @@
           }
         }
       }); 
+}
+
+function getListDevBtc(limit, date){
+    $.ajax({
+        url: "{% url 'DevelopmentSearchApi' %}",
+		data: {
+          'toLimit': limit,
+		  'toTs': date
+        },
+        dataType: 'json',
+        type: 'get',
+        cache:false,
+        success: function(data){
+            //console.log(data);
+            var event_data = '<tbody>';
+			var mainObj = data.devPrice.Data.Data;
+			 var timeFrom = new Date(data.devPrice.Data.TimeFrom * 1000);
+			 var timeTo = new Date(data.devPrice.Data.TimeTo * 1000);
+			 $('#txtTimeFrom').text(("0" + timeFrom.getDate()).slice(-2)+"/"+("0" + (timeFrom.getMonth() + 1)).slice(-2) + "/" + timeFrom.getFullYear());
+			 $('#txtTimeTo').text(("0" + timeTo.getDate()).slice(-2)+"/"+("0" + (timeTo.getMonth() + 1)).slice(-2) + "/" + timeTo.getFullYear());
+			 $('#txtQuantity').text(mainObj.length);
+			$('#tbListDevPrice').find('tbody').remove();
+			 for(i = 0;i < mainObj.length; i++){
+			    var d = new Date(mainObj[i]["time"] * 1000);
+				event_data += '<tr>';
+                event_data += '<td>'+("0" + d.getDate()).slice(-2)+"/"+("0" + (d.getMonth() + 1)).slice(-2) + "/" + d.getFullYear()+'</td>';
+                event_data += '<td>'+mainObj[i]["close"]+'</td>';
+                event_data += '<td>'+mainObj[i]["volumefrom"]+'</td>';
+                event_data += '</tr>';
+			 }
+			 event_data += '</tbody>';
+            $("#tbListDevPrice").append(event_data);
+			if(!$("#listDevBtc").is(":visible")){ $("#listDevBtc").css({'display': 'block'}); }
+			//getDateUpdateGraph();
+        },
+        error: function(d){
+            /*console.log("error");*/
+            alert("404. Please wait load from api.");
+        }
+    });
+}
+
+$("#btnSearchDevelopment").on("click", function(){
+ if(checkSearchingDevBtc()){ getListDevBtc($("#txtQtty").val(), $("#txtDay").val()+"/"+$("#txtMonth").val()+"/"+$("#txtYear").val()) }
+});
+
+function showAndHide(divActiom, changeLabel){
+($(changeLabel).text() == "-") ? $(changeLabel).text("+") : $(changeLabel).text("-");
+ $(divActiom).toggle();
+}
+
+//Begin functions
+showGraph(null, null, null);
+addDates();
 </script>
 {% endblock %}
