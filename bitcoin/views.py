@@ -10,9 +10,12 @@ from .services import get_info
 from .services import getValuesDbBitcoin
 from .services import convertToTimeStamp
 from .services import savePriceBitcon
+from .services import saveDevelopmentBitcoin
+from .services import updateDevelopmentBitcoin
 from .services import getDevelopmentBtc
 from .services import getDateCloseVolumeBitcoin
 from .models import Bitcoin
+from .models import DevelopmentBitcoin
 import json
 import requests
 import datetime
@@ -31,17 +34,14 @@ def home(request):
 
 
 def priceBitcoin(request):
- if 'txtYear' in request.GET:
-  return priceBtcRequest(request)
- else: 
-  dates = getPriceAndDatBitcoin("date")
-  prices = getPriceAndDatBitcoin("price")
-  context = {
-   'dates':  json.dumps(dates),
-   'prices': json.dumps(prices),
-   'values': getValuesDbBitcoin(),
-  }
-  return render(request, 'priceBitcoin.html', context)
+   dates = getPriceAndDatBitcoin("date")
+   prices = getPriceAndDatBitcoin("price")
+   context = {
+    'dates':  json.dumps(dates),
+    'prices': json.dumps(prices),
+    'values': getValuesDbBitcoin(),
+   }
+   return render(request, 'priceBitcoin.html', context)
  
 def priceBtcRequest(request):
   cr_date = datetime.datetime(int(request.GET['txtYear']), int(request.GET['txtMonth']), int(request.GET['txtDay']))
@@ -61,7 +61,6 @@ def priceBitcoinAllData(request):
  data = {
    'dataBtc' : serializers.serialize('json', Bitcoin.objects.all()),
    }
- #return JsonResponse(data)
  return HttpResponse(json.dumps(data), content_type="application/json")
 
 def priceBitcoinRemove(request):
@@ -122,16 +121,32 @@ def priceBitcoinDateAllPrice(request):
  
  
 def developmentBtc(request):
- if 'valTime' in request.POST:
-  return HttpResponse(json.dumps(request.POST['valTime']), content_type="application/json")
- else:
   context = {
-     'dates' : json.dumps(getDateCloseVolumeBitcoin("date")),
-     'closes' : json.dumps(getDateCloseVolumeBitcoin("ultimo")),
-     'volumes' : json.dumps(getDateCloseVolumeBitcoin("volumes")),
-     'valueDev' : getDevelopmentBtc(),
+     'dates': json.dumps(getDateCloseVolumeBitcoin("date")),
+     'closes': json.dumps(getDateCloseVolumeBitcoin("ultimo")),
+     'volumes': json.dumps(getDateCloseVolumeBitcoin("volumes")),
+     'allData': DevelopmentBitcoin.objects.all()
     }
   return render(request, 'developmentBitcoin.html',context)
+
+def developmentBtcSearchApi(request):
+ data = {
+  'devPrice': getDevelopmentBtc(request.GET.get('toLimit'), request.GET.get('toTs'))
+ }
+ return JsonResponse(data)
+
+def developmentBtcSaveAll(request):
+ queryApi = getDevelopmentBtc(request.GET.get('toLimit'), request.GET.get('toTs'))
+ for valuesDev in queryApi['Data']['Data']:
+  if not DevelopmentBitcoin.objects.all().filter(data=datetime.date.fromtimestamp(int(valuesDev['time']))).count():
+   saveDevelopmentBitcoin(datetime.date.fromtimestamp(int(valuesDev['time'])), valuesDev['close'], valuesDev['volumefrom'])
+  else:
+   updateDevelopmentBitcoin(datetime.date.fromtimestamp(int(valuesDev['time'])), valuesDev['close'], valuesDev['volumefrom'])
+ data = {
+  'saved': True
+ }
+ return HttpResponse(json.dumps(data), content_type="application/json")  
+ 
  
 def gitHubPage(request):
  if 'username' in request.GET:

@@ -208,6 +208,10 @@
     <label for="txtPriceUpdate">Preço(*)</label>
     <input type="text" class="form-control" id="txtPriceUpdate">
   </div>
+    <div class="form-group">
+     <label for="txtPriceUpdate">Resultado Preço</label>
+     <input type="text" class="form-control" id="txtOutputPriceUpdate" style="background-color: #FFF" readonly>
+	</div>
       </div>
       <div id="addButtonsUpdate" class="modal-footer">
         <button type="button" class="btn btn-primary" data-dismiss="modal">Fechar</button>
@@ -241,43 +245,18 @@ function addBtnAndTitleToRemove(title, dataValue){
  }
 }
 
-function addBtnToUpdateCaseTryAdd(dayDate, monthDate, yearDate, priceValue){
- $('#infomationModel').modal('show')
- document.getElementById("exampleModalLabel").innerHTML = "Data "+("0" + dayDate).slice(-2)+"/"+("0" + monthDate).slice(-2)+"/"+yearDate+" já existe no banco de dados!";
- document.getElementById("msgOutputRemove").innerHTML = "Desejar atualizar a data com esse preço: "+priceValue+" ?";
- if(document.getElementById("btnUpdateRowTable") == null){
- let btn = document.createElement("button");
-   btn.innerHTML = "Atualizar dados";
-   btn.type = "button";
-   btn.id = "btnUpdateRowTable";
-   btn.className = "btn btn-warning";
-   btn.onclick = function () {
-   updatePriceBitcoin(dayDate, monthDate, yearDate, priceValue);
-   document.getElementById("btnUpdateRowTable").remove();
-   $('#infomationModel').modal('hide');
-   createFormToUpdate(dayDate, monthDate, yearDate, priceValue);
-  };
-   document.getElementById("btnActionRemove").appendChild(btn);
- }
-}
-
 function createFormToUpdate(dayDate, monthDate, yearDate, priceValue){
- $('#infomationModelToUpdate').modal('show');
- $('#txtDayUpdate').val(('0' + dayDate).slice(-2));
- $('#txtMonthUpdate').val(('0' + monthDate).slice(-2));
- $('#txtYearUpdate').val(yearDate);
- $('#txtPriceUpdate').val(priceValue);
+ setValuesFormToUpdate(dayDate, monthDate, yearDate, priceValue);
  if(document.getElementById("btnUpdateTableData") == null){
  let btn = document.createElement("button");
-   btn.innerHTML = '<span data-feather="edit"></span>'+' Atualizar dados';
+   btn.innerHTML = 'Atualizar dados';
    btn.type = "button";
    btn.id = "btnUpdateTableData";
    btn.className = "btn btn-warning";
    btn.onclick = function (){
    if(checkBeforeUpdate()){
-   updatePriceBitcoin($("#txtDayUpdate").val(), $("#txtMonthUpdate").val(), $("#txtYearUpdate").val(), $("#txtPriceUpdate").val()); 
-   document.getElementById("exampleModalLabel").innerHTML = "Data "+$("#txtDayUpdate").val()+"/"+ $("#txtMonthUpdate").val()+"/"+$("#txtYearUpdate").val()+" atualizada !";
-   document.getElementById("msgOutputRemove").innerHTML = "Data e preço atualizado com sucesso !";
+   updatePriceBitcoin($("#txtDayUpdate").val(), $("#txtMonthUpdate").val(), $("#txtYearUpdate").val(), getPriceBitcoinToUpdate()); 
+   showMsgModal("Data "+$("#txtDayUpdate").val()+"/"+ $("#txtMonthUpdate").val()+"/"+$("#txtYearUpdate").val()+" atualizada !", "Data e preço atualizado com sucesso !");
    document.getElementById("btnUpdateTableData").remove();
    $('#infomationModelToUpdate').modal('hide');
    $('#infomationModel').modal('show');
@@ -286,6 +265,20 @@ function createFormToUpdate(dayDate, monthDate, yearDate, priceValue){
   };
    document.getElementById("addButtonsUpdate").appendChild(btn);
  }
+}
+
+function setValuesFormToUpdate(dayDate, monthDate, yearDate, priceValue){
+ $('#infomationModelToUpdate').modal('show');
+ $('#txtDayUpdate').val(('0' + dayDate).slice(-2));
+ $('#txtMonthUpdate').val(('0' + monthDate).slice(-2));
+ $('#txtYearUpdate').val(yearDate);
+ $('#txtPriceUpdate').val(priceValue);
+ $("#txtOutputPriceUpdate").val("");
+}
+
+function showMsgModal(txtTitle, txtMsg){
+  document.getElementById("exampleModalLabel").innerHTML = "Data "+$("#txtDayUpdate").val()+"/"+ $("#txtMonthUpdate").val()+"/"+$("#txtYearUpdate").val()+" atualizada !";
+  document.getElementById("msgOutputRemove").innerHTML = "Data e preço atualizado com sucesso !";
 }
 
 /* Get data from api by time */
@@ -312,10 +305,10 @@ function createGraph(dateValue, priceValue){
       myChart = new Chart(ctx, {
         type: 'line',
         data: {
-          labels: (dateValue == null && priceValue == null) ? {{ dates|safe }} : JSON.parse(dateValue.toString()) ,
+          labels: (dateValue == null) ? {{ dates|safe }} : JSON.parse(dateValue.toString()) ,
           datasets: [{
 		    label: ' Preço do Bitcoin',
-            data: (dateValue == null && priceValue == null) ? {{ prices|safe }} : JSON.parse(priceValue.toString()),
+            data: (priceValue == null) ? {{ prices|safe }} : JSON.parse(priceValue.toString()),
             lineTension: 0,
             backgroundColor: 'transparent',
             borderColor: '#007bff',
@@ -383,6 +376,10 @@ function showHideGraph(option, tztOption){
   $(option).toggle();
 }
 
+function insertDecimal(num) {
+   return (num / 100).toFixed(2);
+}
+
 function getAllPriceBitcoin(){
     $.ajax({
         url: "{% url 'PriceAllData' %}",
@@ -448,7 +445,7 @@ function savePriceBitcoin(){
                document.getElementById("exampleModalLabel").innerHTML = "Data "+("0" + data.dayValue).slice(-2)+"/"+("0" + data.monthValue).slice(-2)+"/"+data.yearValue+" cadastrada com sucesso !";
                document.getElementById("msgOutputRemove").innerHTML = "Data e preço cadastrado com sucesso !";	
 			  }else{
-               addBtnToUpdateCaseTryAdd(data.dayValue, data.monthValue, data.yearValue, data.priceValue);		   
+               createFormToUpdate(data.dayValue, data.monthValue, data.yearValue, data.priceValue);		   
 			  }
 			  getAllPriceBitcoin();
             },
@@ -549,10 +546,8 @@ $("#checkPrice").on("click", function(){
 });
 
 $("#txtPriceUpdate").on("keyup",function() {
-   console.log(getTxtPriceUpdate().length);
-   setTxtPriceUpdate( parseFloat(getTxtPriceUpdate().replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1').slice(0,12)));
-   //if(getTxtPriceUpdate().length < 4){ getTxtPriceUpdate().replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1').slice(0,12) }
-   //else{ setTxtPriceUpdate( Number(getTxtPriceUpdate().replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1').slice(0,12)).toFixed(2)) };
+   setTxtPriceUpdate( getTxtPriceUpdate().replace(/[^0-9.]/g, '').replaceAll('.','').slice(0,12));
+   $("#txtOutputPriceUpdate").val(insertDecimal(getTxtPriceUpdate()));
 });
 
 function getTxtPriceUpdate(){
@@ -563,5 +558,8 @@ function setTxtPriceUpdate(valuePar){
  return document.getElementById("txtPriceUpdate").value = valuePar;
 }
 
+function getPriceBitcoinToUpdate(){
+ return ($("#txtOutputPriceUpdate").val() == "") ? $("#txtPriceUpdate").val() : $("#txtOutputPriceUpdate").val();
+}
 </script>	 
 {% endblock %}

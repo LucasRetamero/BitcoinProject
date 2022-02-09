@@ -12,4 +12,6 @@ urlpatterns = [
     path('priceBitcoin/GetAllDataGraph/', views.priceBitcoinDateAllPrice, name='PriceAllDataGraph'),
     path('saveDevBtc/<str:date>/<str:close>/<str:volume>', views.saveOneDevBtc, name='savedevelopmentbtc'),
     path('developmentBitcoin', views.developmentBtc, name='Development'),
+    path('developmentBitcoin/searchDevelopment/', views.developmentBtcSearchApi, name='DevelopmentSearchApi'),
+    path('developmentBitcoin/savelAllDevelopment/', views.developmentBtcSaveAll, name='DevelopmentSaveAll'),
     ]
