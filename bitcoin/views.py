@@ -145,8 +145,18 @@ def developmentBtcSaveAll(request):
  data = {
   'saved': True
  }
- return HttpResponse(json.dumps(data), content_type="application/json")  
- 
+ return JsonResponse(data)  
+
+
+def developmentBtcSave(request):
+ if not DevelopmentBitcoin.objects.all().filter(data=request.GET.get('date')).count():
+  saveDevelopmentBitcoin(request.GET.get('date'), request.GET.get('close'), request.GET.get('volume'))
+ else:
+  updateDevelopmentBitcoin(request.GET.get('date'), request.GET.get('close'), request.GET.get('volume'))
+ data = {
+  'saved': True
+ }
+ return JsonResponse(data)
  
 def gitHubPage(request):
  if 'username' in request.GET:
