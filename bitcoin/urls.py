@@ -14,4 +14,5 @@ urlpatterns = [
     path('developmentBitcoin', views.developmentBtc, name='Development'),
     path('developmentBitcoin/searchDevelopment/', views.developmentBtcSearchApi, name='DevelopmentSearchApi'),
     path('developmentBitcoin/savelAllDevelopment/', views.developmentBtcSaveAll, name='DevelopmentSaveAll'),
+    path('developmentBitcoin/savelDevelopment/', views.developmentBtcSave, name='DevelopmentSave'),
     ]
