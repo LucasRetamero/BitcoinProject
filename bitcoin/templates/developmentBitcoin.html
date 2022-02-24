@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load steptimetags %}
+{% load static %}
 
 {% block content %}
 <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
@@ -21,6 +22,20 @@
   <div class="card-header bg-primary text-white h4" onclick="showHideGraph('#myChart', '#optionPrice')">
     Pesquisar desenvolvimento do Bitcoin pela data
   </div>
+  <div id="msgOutputSearchDevError" class="alert alert-danger" role="alert" style="display: none;">
+  <center><b>Operação não realizada !</b></center><br>
+   Preencha todos os campos antes de continuar:
+  <ul>
+  <li class="emptyDayField"><b>Campo <i>Dia</i> não selecionado</b></li>
+  <li class="emptyMonthField"><b>Campo <i>Mês</i> não selecionado </b></li>
+  <li class="emptyYearField"><b>Campo <i>Ano</i> não selecionado </b></li>
+  <li class="emptyQuantyField"><b>Campo <i>Quantidade</i> não selecionado </b></li>
+  </ul>
+</div>
+<div id="msgOutputSearchDevSuccess" class="alert alert-success" role="alert" style="display: none;">
+  <center><b>Operação realizada com sucesso !</b><br>
+   <a href="#listDevBtc">Ver resultado da pesquisa !</a></center>
+</div>
   <div class="row">
   <div class="col-3">
     <label for="exampleFormControlSelect1">Dia</label>
@@ -47,7 +62,7 @@
     </select>
   </div>
   </div>
-  <button id="btnSearchDevelopment" type="button" class="btn btn-lg btn-primary text-white w-50 mx-auto" id="checkPrice" style="margin-top: 15px;">Verificar desenvolvimento</button>
+  <button type="button" class="btn btn-lg btn-primary text-white w-50 mx-auto" id="btnCheckDevPrice" style="margin-top: 15px;"><span data-feather="check-square" style="width: 25px;height: 25px;"></span> Verificar desenvolvimento</button>
  </div>
  
 <div class="card" id="devBtc">
@@ -76,7 +91,7 @@
               <td id="txtTimeFrom"><!--{{ valueDev.Data.TimeFrom|print_timestamp|date:"d-m-Y" }}--></td>
               <td id="txtTimeTo"><!--{{ valueDev.Data.TimeTo|print_timestamp|date:"d-m-Y" }}--></td>
               <td id="txtQuantity"><!--{{ valueDev.Data.TimeTo|print_timestamp|date:"d-m-Y" }}--></td>
-              <td><button id="btnSaveAllDevelopment" type="button" class="btn btn-primary text-white">Salvar Todos</button></td>
+              <td><button id="btnSaveAllDevelopment" type="button" class="btn btn-primary text-white"><span data-feather="plus-square" style="width: 20px;height: 20px;"></span> Salvar Todos</button></td>
 			  </tr>
 			   <table id="tbListDevPrice" class="table table-striped table-sm">
               <thead>
@@ -107,20 +122,24 @@
     Lista do desenvolvimento do Bitcoin <span id="lblDevFromDb" style="float: right;font-weight: bold;">-</span>
   </div>
   <div id="tbDevBtcFromDb"class="table-responsive">
-            <table class="table table-striped table-sm">
+            <table id="tbDevBtcToPage"class="table table-striped table-sm">
               <thead>
                 <tr>
                   <th>Data</th>
                   <th>Ultimo</th>
                   <th>Volume</th>
+                  <th>Menu</th>
                 </tr>
               </thead>
               <tbody>
 			  {% for valueDev in allData %}
                <tr>
-              <td>{{ valueDev.data|date:"d-m-Y" }}</td>
-              <td>{{ valueDev.ultimo }}</td>
-              <td>{{ valueDev.volume }}</td>
+              <td class="txtDateToUpdate">{{ valueDev.data|date:"d-m-Y" }}</td>
+              <td class="txtCloseToUpdate">{{ valueDev.ultimo }}</td>
+              <td class="txtVolumeToUpdate">{{ valueDev.volume }}</td>
+              <td><button type="button" class="btn btn-warning btnUpdateDevBtc"><span data-feather="edit"></span> Atualizar</button>
+			      <button type="button" class="btn btn-danger btnRemoveDevBtc"><span data-feather="trash-2"></span> Remover</button>
+              </td>
 			  </tr>
 			  {% endfor %}
 			  </tbody>
@@ -140,7 +159,118 @@
         <p id="msgOutput" style="font-size:15px;"><!-- Text here --></p>
       </div>
       <div id="btnAction" class="modal-footer">
-        <button type="button" class="btn btn-primary" data-dismiss="modal">Fechar</button>
+        <button type="button" class="btn btn-primary" data-dismiss="modal"><span data-feather="x-square"></span> Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="infomationModel" tabindex="-1" role="dialog"  aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel"><!-- Here the text--></h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p id="msgOutput" style="font-size:15px;"><!-- Text here --></p>
+      </div>
+      <div id="btnAction" class="modal-footer">
+        <button type="button" class="btn btn-primary" data-dismiss="modal"><span data-feather="x-square"></span> Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Confirmation save all data -->
+<div class="modal fade" id="askSaveAllModel" tabindex="-1" role="dialog"  aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Realizar operação de cadastro ?</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p id="msgOutput" style="font-size:15px;">Deseja realmente cadastrar todos os dados da tabela ?</p>
+      </div>
+      <div id="btnAction" class="modal-footer">
+        <button type="button" class="btn btn-primary" data-dismiss="modal"><span data-feather="x-square"></span> Fechar</button>
+        <button id="btnSaveAllDataToDB" type="button" class="btn btn-success" data-dismiss="modal"><span data-feather="plus-square"></span> Salvar Todos</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Confirmation remove data -->
+<div class="modal fade" id="askRemoveAllModel" tabindex="-1" role="dialog"  aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Realizar operação de cadastro ?</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:15px;">Deseja realmente remover a data: <b><label id="lblDataToRemove"></label></b> ?</p>
+      </div>
+      <div id="btnAction" class="modal-footer">
+        <button type="button" class="btn btn-primary" data-dismiss="modal"><span data-feather="x-square"></span> Fechar</button>
+        <button id="btnRemoveFromDB" type="button" class="btn btn-danger" data-dismiss="modal"><span data-feather="trash-2"></span> Remover</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Update Form -->
+<div class="modal fade" id="infomationModelToUpdate" tabindex="-1" role="dialog"  aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><b>Atualizar Preço</b></h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+	  <div id="msgOutputUpdError" class="alert alert-danger" role="alert" style="display: none;">
+  <center>Operação não realizada !</center><br>
+   Preencha todos os campos antes de continuar:
+  <ul>
+  <li class="emptyPriceField"><b>Campo <i>Preço</i> vazio </b></li>
+  <li class="emptyVolumeField"><b>Campo <i>Volume</i> vazio </b></li>
+  </ul>
+</div>
+<div id="msgOutputUpdSuccess" class="alert alert-success" role="alert" style="display: none;">
+  <center><b>Operação realizada com sucesso !</b><br>
+   Todos os dados foram atualizados !</center>
+</div>
+
+      <div id="formToUpdate" class="modal-body">
+	   <i>* = Campo editavel</i>
+  <div class="form-group">
+    <label for="txtDateUpdate">Data</label>
+    <input type="text" class="form-control" id="txtDateUpdate">
+  </div>
+  <div class="form-group">
+    <label for="txtPriceUpdate">Preço(*)</label>
+    <input type="text" class="form-control" id="txtPriceUpdate">
+  </div>
+  <div class="form-group">
+    <label for="txtVolumeUpdate">Volume(*)</label>
+    <input type="text" class="form-control" id="txtVolumeUpdate">
+  </div>
+    <div class="form-group">
+     <label for="txtPriceUpdate">Resultado Preço</label>
+     <input type="text" class="form-control" id="txtOutputPriceUpdate" style="background-color: #FFF" readonly>
+	</div>
+      </div>
+      <div id="addButtonsUpdate" class="modal-footer">
+        <button type="button" class="btn btn-primary" data-dismiss="modal"><span data-feather="x-square"></span> Fechar</button>
+        <button id="btnActionUpdateDevBtc" type="button" class="btn btn-warning"><span data-feather="edit"></span> Atualizar</button>
       </div>
     </div>
   </div>
@@ -148,107 +278,48 @@
 {% endblock %}
  
 {% block javascript %} 
+<script src="{% static 'js/developmentBitcoin/changeFrontEnd.js' %}"></script>     
+<script src="{% static 'js/developmentBitcoin/event.js' %}"></script>     
+<script src="{% static 'js/developmentBitcoin/graphic.js' %}"></script>     
+<script src="{% static 'js/developmentBitcoin/setAndGet.js' %}"></script>     
+<script src="{% static 'js/developmentBitcoin/validation.js' %}"></script>     
+<script src="{% static 'js/formatValues.js' %}"></script>
 <script type="text/javascript">
-var graphCanvas;
 
-function addDates(){
- addDay();
- addMonth();
- addYear();
- addQuantity();
-}
-
-function addDay(){
-	for(var p=1; p<=31; p++){
-	  var opt = document.createElement('option');
-      opt.value = p;
-      opt.innerHTML = p;
-      document.getElementById("txtDay").appendChild(opt);	
- }
-}
-
-function addMonth(){
-var month = [
-    "janeiro",
-    "fevereiro",
-    "março",
-    "abril",
-    "maio",
-    "junho",
-    "julho",
-    "agosto",
-    "setembro",
-    "outubro",
-    "novembro",
-    "dezembro" 
- ];
-	for(var p=0; p<12; p++){
-	  var opt = document.createElement('option');
-      opt.value = p+1;
-      opt.innerHTML = month[p];
-      document.getElementById("txtMonth").appendChild(opt);	
- }
-}
-
-function addYear(){
-	for(var p=2009; p<=3000; p++){
-	  var opt = document.createElement('option');
-      opt.value = p;
-      opt.innerHTML = p;
-      document.getElementById("txtYear").appendChild(opt);	
- }
-}
-function addQuantity(){
-	for(var p=1; p<=2000; p++){
-	  var opt = document.createElement('option');
-      opt.value = p;
-      opt.innerHTML = p;
-      document.getElementById("txtQtty").appendChild(opt);	
- }
-}
-
-function checkSearchingDevBtc(){
- var points = 4;
-  if($("#txtDay").val() != "Default"){ points--; }
-  if($("#txtMonth").val() != "Default"){ points--; }
-  if($("#txtYear").val() != "Default"){ points--; }
-  if($("#txtQtty").val() != "Default"){ points--; }
- return (points == 0) ?  true : alert("Um ou mais campos sem seleção !");
-}
-
-function showGraph(dates, closes, volumes){
- var ctx = document.getElementById("DevelopmentBtc");
-     graphCanvas = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: (dates == null ) ? JSON.parse('{{ dates|safe }}') : dates,
-          datasets: [{
-		    label: ' Fechamento do Bitcoin',
-            data: (closes == null ) ? JSON.parse('{{ closes|safe }}') : closes,
-            lineTension: 0,
-            backgroundColor: 'transparent',
-            borderColor: '#007bff',
-            borderWidth: 4,
-            pointBackgroundColor: '#007bff'
-          },
-		  {
-		    label: ' Volume do Bitcoin',
-            data: (volumes == null ) ? JSON.parse('{{ volumes|safe }}') : volumes,
-            lineTension: 0,
-            backgroundColor: 'transparent',
-            borderColor: '#ff1a1a',
-            borderWidth: 4,
-            pointBackgroundColor: '#ff1a1a'
-          },]
+//DAO: Get all data from database
+function getAllDevelopmentBitcoin(){
+    $.ajax({
+        url: "{% url 'DevelopmentAllData' %}",
+        dataType: 'json',
+        type: 'get',
+        cache:false,
+        success: function(data){
+            //console.log(data);
+            var event_data = '<tbody>';
+			var mainObj = JSON.parse(data.dataBtc);
+			$('#tbDevBtcToPage').find('tbody').remove();
+			 for(i = 0;i < mainObj.length; i++){
+			  var d = new Date(mainObj[i]["fields"]["data"]);
+				event_data += '<tr>';
+                event_data += '<td class="txtDateToUpdate">'+("0" + (d.getDate() + 1)).slice(-2)+"/"+("0" + (d.getMonth() + 1)).slice(-2) + "/" + d.getFullYear()+'</td>';
+                event_data += '<td class="txtCloseToUpdate">'+mainObj[i]["fields"]["ultimo"]+'</td>';
+                event_data += '<td class="txtVolumeToUpdate">'+mainObj[i]["fields"]["volume"]+'</td>';
+                event_data += '<td><button type="button" class="btn btn-warning btnUpdateDevBtc"><span data-feather="edit"></span> Editar</button></td>';
+                event_data += '<td><button type="button" class="btn btn-danger btnRemoveDevBtc"><span data-feather="trash-2"></span> Remover</button></td>';
+                event_data += '</tr>';
+			 }
+			 event_data += '</tbody>';
+            $("#tbDevBtcToPage").append(event_data);
+			feather.replace();
         },
-        options: {
-          legend: {
-            display: false,
-          }
+        error: function(d){
+            /*console.log("error");*/
+            alert("404. Please wait load from database.");
         }
-      }); 
+    });
 }
 
+//DAO: Search development of bitcoin 
 function getListDevBtc(limit, date){
     $.ajax({
         url: "{% url 'DevelopmentSearchApi' %}",
@@ -261,27 +332,12 @@ function getListDevBtc(limit, date){
         cache:false,
         success: function(data){
             //console.log(data);
-            var event_data = '<tbody>';
-			var mainObj = data.devPrice.Data.Data;
-			 var timeFrom = new Date(data.devPrice.Data.TimeFrom * 1000);
-			 var timeTo = new Date(data.devPrice.Data.TimeTo * 1000);
-			 $('#txtTimeFrom').text(("0" + timeFrom.getDate()).slice(-2)+"/"+("0" + (timeFrom.getMonth() + 1)).slice(-2) + "/" + timeFrom.getFullYear());
-			 $('#txtTimeTo').text(("0" + timeTo.getDate()).slice(-2)+"/"+("0" + (timeTo.getMonth() + 1)).slice(-2) + "/" + timeTo.getFullYear());
-			 $('#txtQuantity').text(mainObj.length);
-			$('#tbListDevPrice').find('tbody').remove();
-			 for(i = 0;i < mainObj.length; i++){
-			    var d = new Date(mainObj[i]["time"] * 1000);
-				event_data += '<tr>';
-                event_data += '<td class="getDateToSave">'+("0" + d.getDate()).slice(-2)+"/"+("0" + (d.getMonth() + 1)).slice(-2) + "/" + d.getFullYear()+'</td>';
-                event_data += '<td class="getCloseToSave">'+mainObj[i]["close"]+'</td>';
-                event_data += '<td class="getVolumeToSave">'+mainObj[i]["volumefrom"]+'</td>';
-                event_data += '<td><button type="button" class="btn btn-primary text-white btnSaveOneDevelopment">Salvar</button></td>';
-                event_data += '</tr>';
-			 }
-			 event_data += '</tbody>';
-            $("#tbListDevPrice").append(event_data);
+            setInfoTableFromApi(convertTimestampToDate(data.devPrice.Data.TimeFrom, 1), convertTimestampToDate(data.devPrice.Data.TimeTo, 1), data.devPrice.Data.Data.length);
+			createBodyFromListDevBtc(data.devPrice.Data.Data);			
 			if(!$("#listDevBtc").is(":visible")){ $("#listDevBtc").css({'display': 'block'}); }
-			//getDateUpdateGraph();
+			showMsgOnSearchDevPrice(1);
+			getDateUpdateGraphDevBtc();
+			getAllDevelopmentBitcoin();
         },
         error: function(d){
             /*console.log("error");*/
@@ -290,6 +346,7 @@ function getListDevBtc(limit, date){
     });
 }
 
+//DAO: Send data by parameter and do searching(server-side) to save in the database
 function setSaveAllListDevBtc(limit, date){
     $.ajax({
         url: "{% url 'DevelopmentSaveAll' %}",
@@ -302,8 +359,9 @@ function setSaveAllListDevBtc(limit, date){
         cache:false,
         success: function(data){
             //console.log(data);
-            if(data.saved){ }
-			//getDateUpdateGraph();
+            if(data.saved){ setTitleAndMsgInformationModel("Operação realizada com successo !", "Todos os dados foram salvos com sucesso !"); }
+			getDateUpdateGraphDevBtc();
+			getAllDevelopmentBitcoin();
         },
         error: function(d){
             /*console.log("error");*/
@@ -312,6 +370,7 @@ function setSaveAllListDevBtc(limit, date){
     });
 }
 
+//DAO: Send data by parameter and save in the database
 function setSaveListDevBtc(date, close, volume){
     $.ajax({
         url: "{% url 'DevelopmentSave' %}",
@@ -325,8 +384,9 @@ function setSaveListDevBtc(date, close, volume){
         cache:false,
         success: function(data){
             //console.log(data);
-            if(data.saved){ alert("Work !") }
-			//getDateUpdateGraph();
+            if(data.saved){ setTitleAndMsgInformationModel("Operação realizada com sucesso !", "Dados salvo com sucesso !"); }
+			getDateUpdateGraphDevBtc();
+			getAllDevelopmentBitcoin();
         },
         error: function(d){
             /*console.log("error");*/
@@ -335,79 +395,74 @@ function setSaveListDevBtc(date, close, volume){
     });
 }
 
-$("#btnSearchDevelopment").on("click", function(){
- if(checkSearchingDevBtc()){ 
-   getListDevBtc($("#txtQtty").val(), $("#txtDay").val()+"/"+$("#txtMonth").val()+"/"+$("#txtYear").val()); 
-   setTitleAndMsgInformationModel("Operação realizada com sucesso !", "Consulta realizada com sucesso !"); 
-   rmElement("btnSaveAllDataToDB");
-   rmElement("btnRemoveRowTable");
-   $('#infomationModel').modal('show');
- }
-});
-
-$("#btnSaveAllDevelopment").on("click", function(){
-setTitleAndMsgInformationModel("Realizar operação de cadastro ?", "Deseja cadastrar todos os dados da tabela ?");
-createSaveAllButton();
-$('#infomationModel').modal('show');
-});
-
-$(document).on('click', '.btnSaveOneDevelopment', function(){
- var row = $(this).closest("tr");    // Find the row
- var dateToSave = row.find(".getDateToSave").text();
- var closeToSave = row.find(".getCloseToSave").text();
- var volumeToSave = row.find(".getVolumeToSave").text();
- var dateConvert = moment(dateToSave,"DD/MM/YYYY").toDate();
- var d = new Date(dateConvert);
- var dateFormatToSave =  d.getFullYear()+"-"+("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2);
-  setSaveListDevBtc(dateFormatToSave, closeToSave, volumeToSave);
-  setTitleAndMsgInformationModel("Operação realizada com sucesso !", "Dados salvos com sucesso !");
-   rmElement("btnSaveAllDataToDB");
-   rmElement("btnRemoveRowTable");
-  $('#infomationModel').modal('show');
-});
-
-function createSaveAllButton(){
- if(document.getElementById("btnSaveAllDataToDB") == null){
-   let btn = document.createElement("button");
-    btn.innerHTML = 'Salvar todos os dados';
-    btn.type = "button";
-    btn.id = "btnSaveAllDataToDB";
-    btn.className = "btn btn-success";
-    btn.onclick = function (){ saveAllDataFromApi(); };
-   document.getElementById("btnAction").appendChild(btn);
- }
+//DAO: Send data by parameter and update in the database
+function setUpdateListDevBtc(date, close, volume){
+    $.ajax({
+        url: "{% url 'DevelopmentSave' %}",
+		data: {
+          'date': date,
+		  'close': close,
+		  'volume': volume
+        },
+        dataType: 'json',
+        type: 'get',
+        cache:false,
+        success: function(data){
+            //console.log(data);
+            if(data.saved){  }
+			getDateUpdateGraphDevBtc();
+			getAllDevelopmentBitcoin();
+        },
+        error: function(d){
+            /*console.log("error");*/
+            alert("404. Please wait load from api.");
+        }
+    });
 }
 
-function saveAllDataFromApi(){
-  setSaveAllListDevBtc($("#txtQtty").val(), $("#txtDay").val()+"/"+$("#txtMonth").val()+"/"+$("#txtYear").val());
-  setTitleAndMsgInformationModel("Operação realizada com sucesso !", "Todos os dados foram salvos com sucesso !");
-  rmElement("btnSaveAllDataToDB");
-  rmElement("btnRemoveRowTable");
+//DAO: Get data from database to send in the graphic
+function getDateUpdateGraphDevBtc(){
+    $.ajax({
+        url: "{% url 'DevelopmentAllDataToGraphic' %}",
+		data: {},
+        dataType: 'json',
+        type: 'get',
+        cache:false,
+        success: function(data){
+            //console.log(data);
+            showGraph( data.date, data.close, data.volume );
+        },
+        error: function(d){
+            /*console.log("error");*/
+            alert("404. Please wait load from api.");
+        }
+    });
 }
 
-function rmElement(idElement){
- if(document.getElementById(idElement) != null){ return document.getElementById(idElement).remove(); }
+//DAO: remove data from database
+function setRemoveDateDevBtc(date){
+    $.ajax({
+        url: "{% url 'DevelopmentRemove' %}",
+		data: {
+		'date' : date,
+		},
+        dataType: 'json',
+        type: 'get',
+        cache:false,
+        success: function(data){
+            //console.log(data);
+            if(data.deleted){ setTitleAndMsgInformationModel("Operação realizada com sucesso !", "Dado removido com sucesso !"); }			
+			getDateUpdateGraphDevBtc();
+			getAllDevelopmentBitcoin();
+        },
+        error: function(d){
+            /*console.log("error");*/
+            alert("404. Please wait load from api.");
+        }
+    });
 }
 
-function scrollToElement(idElement){ document.getElementById(idElement).scrollIntoView(); }
-
-function setTitleAndMsgInformationModel(title, msg){
- $("#exampleModalLabel").text(title);
- $("#msgOutput").text(msg);
-}
-
-function showAndHide(divActiom, changeLabel){
-($(changeLabel).text() == "-") ? $(changeLabel).text("+") : $(changeLabel).text("-");
- $(divActiom).toggle();
-}
-
-function toDate(dateStr) {
-  var parts = dateStr.split("-")
-  return new Date(parts[2], parts[1] - 1, parts[0])
-}
-
-//Begin functions
-showGraph(null, null, null);
-addDates();
-</script>
+//Load graphic
+showGraph('{{ dates|safe }}', '{{ closes|safe }}', '{{ volumes|safe }}');
+</script>     
 {% endblock %}
