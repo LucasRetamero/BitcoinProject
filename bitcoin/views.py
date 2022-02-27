@@ -147,7 +147,6 @@ def developmentBtcSaveAll(request):
  }
  return JsonResponse(data)  
 
-
 def developmentBtcSave(request):
  if not DevelopmentBitcoin.objects.all().filter(data=request.GET.get('date')).count():
   saveDevelopmentBitcoin(request.GET.get('date'), request.GET.get('close'), request.GET.get('volume'))
@@ -157,6 +156,27 @@ def developmentBtcSave(request):
   'saved': True
  }
  return JsonResponse(data)
+ 
+def developmentBtcAllData(request):
+ data = {
+   'dataBtc' : serializers.serialize('json', DevelopmentBitcoin.objects.all()),
+   }
+ return HttpResponse(json.dumps(data), content_type="application/json")
+
+def developmentBtcAllDataToGraphic(request):
+ data = {
+  'date': json.dumps(getDateCloseVolumeBitcoin("date")),
+  'close': json.dumps(getDateCloseVolumeBitcoin("ultimo")),
+  'volume': json.dumps(getDateCloseVolumeBitcoin("volume")),
+  }
+ return HttpResponse(json.dumps(data), content_type="application/json")
+
+def developmentBtcRemove(request):
+ DevelopmentBitcoin.objects.filter(data=request.GET.get("date", None)).delete() 
+ data = {
+   'deleted': True
+ }
+ return HttpResponse(json.dumps(data), content_type="application/json")
  
 def gitHubPage(request):
  if 'username' in request.GET:
