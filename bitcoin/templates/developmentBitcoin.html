@@ -19,7 +19,7 @@
           </div>
 
 <div class="card" style="margin-bottom: 25px;">
-  <div class="card-header bg-primary text-white h4" onclick="showHideGraph('#myChart', '#optionPrice')">
+  <div class="card-header bg-primary text-white h4" onclick="ChangeView.showAndHide('#myChart', '#optionPrice')">
     Pesquisar desenvolvimento do Bitcoin
   </div>
   <div id="msgOutputSearchDevError" class="alert alert-danger" role="alert" style="display: none;">
@@ -36,44 +36,54 @@
   <center><b>Operação realizada com sucesso !</b><br>
    <a href="#listDevBtc">Ver resultado da pesquisa !</a></center>
 </div>
-  <div class="row">
-  <div class="col-3">
-    <label for="exampleFormControlSelect1">Dia</label>
-    <select class="form-control" id="txtDay" required>
-     <option value="Default" selected>Dia</option>
-	</select>
-  </div>
-   <div class="col-3">
-    <label for="exampleFormControlSelect1">Mês</label>
-    <select class="form-control" id="txtMonth" required>
+
+   <div class="form-group">
+    <label for="exampleFormControlSelect1" class="font-weight-bold">Dia <img id="fullDayImg" src="{% static 'img/rightIcon.png' %}" class="img-fluid" width="25px" height="25px" style="display: none;"></img> <img id="emptyDayImg" src="{% static 'img/errorIcon.png' %}" class="img-fluid" width="25px" height="25px" style="display: none;"></img></label>
+    <div id="colorCbDay">
+	 <select class="form-control" id="txtDay" required>
+      <option value="Default" selected>Dia</option>
+	 </select>
+	</div>
+   </div>
+   
+   <div class="form-group">
+     <label class="font-weight-bold">Mês <img id="fullMonthImg" src="{% static 'img/rightIcon.png' %}" class="img-fluid" width="25px" height="25px" style="display: none;"></img> <img id="emptyMonthImg" src="{% static 'img/errorIcon.png' %}" class="img-fluid" width="25px" height="25px" style="display: none;"></img></label>
+    <div id="colorCbMonth">
+	 <select class="form-control" id="txtMonth" required>
       <option value="Default" selected>Mês</option>
-    </select>
-  </div>
-   <div class="col-3">
-    <label for="exampleFormControlSelect1">Ano</label>
-    <select class="form-control" id="txtYear" required>
-      <option value="Default" selected>Ano</option>
-    </select>
-  </div>
-  <div class="col-3">
-    <label for="exampleFormControlSelect1">Quantidade</label>
-    <select class="form-control" id="txtQtty" required>
+     </select>
+    </div>
+   </div>
+   
+   <div class="form-group">
+    <label class="font-weight-bold">Ano <img id="fullYearImg" src="{% static 'img/rightIcon.png' %}" class="img-fluid" width="25px" height="25px" style="display: none;"></img> <img id="emptyYearImg" src="{% static 'img/errorIcon.png' %}" class="img-fluid" width="25px" height="25px" style="display: none;"></img></label>
+     <div id="colorCbYear">
+	  <select class="form-control" id="txtYear" required>
+       <option value="Default" selected>Ano</option>
+     </select>
+    </div>
+   </div>
+   
+   <div class="form-group">
+    <label class="font-weight-bold">Quantidade <img id="fullQuantityImg" src="{% static 'img/rightIcon.png' %}" class="img-fluid" width="25px" height="25px" style="display: none;"></img> <img id="emptyQuantityImg" src="{% static 'img/errorIcon.png' %}" class="img-fluid" width="25px" height="25px" style="display: none;"></img></label>
+    <div id="colorCbQuantity">
+	 <select class="form-control" id="txtQtty" required>
       <option value="Default" selected>Quantidade</option>
-    </select>
-  </div>
-  </div>
+     </select>
+    </div>
+   </div>
   <button type="button" class="btn btn-lg btn-primary text-white w-50 mx-auto" id="btnCheckDevPrice" style="margin-top: 15px;" data-url="{% url 'DevelopmentSearchApi' %}"><span data-feather="check-square" style="width: 25px;height: 25px;"></span> Verificar desenvolvimento</button>
  </div>
  
 <div class="card" id="devBtc">
-  <div class="card-header bg-primary text-white h4" onclick="showAndHide('#DevelopmentBtc', '#optionDevPrice')">
+  <div class="card-header bg-primary text-white h4" onclick="ChangeView.showAndHide('#DevelopmentBtc', '#optionDevPrice')">
     Desenvolvimento do Bitcoin  <span id="optionDevPrice" style="float: right;font-weight: bold;">-</span>
   </div>
  <canvas class="my-4 w-100" id="DevelopmentBtc" width="900" height="380" data-url="{% url 'DevelopmentAllDataToGraphic' %}"></canvas>
 </div>
 
 <div class="card" id="listDevBtc" style="display: none;">
-  <div class="card-header bg-primary text-white h4" onclick="showAndHide('#tbDevBtcFromApi', '#lblDevFromApi')">
+  <div class="card-header bg-primary text-white h4" onclick="ChangeView.showAndHide('#tbDevBtcFromApi', '#lblDevFromApi')">
     Resultado da pesquisa <span id="lblDevFromApi" style="float: right;font-weight: bold;">-</span>
   </div>
   <div id="tbDevBtcFromApi" class="table-responsive">
@@ -118,7 +128,7 @@
  </div>
 
 <div class="card" id="listDevBtcFromDB">
-  <div class="card-header bg-primary text-white h4" onclick="showAndHide('#tbDevBtcFromDb', '#lblDevFromDb')">
+  <div class="card-header bg-primary text-white h4" onclick="ChangeView.showAndHide('#tbDevBtcFromDb', '#lblDevFromDb')">
     Lista do desenvolvimento do Bitcoin <span id="lblDevFromDb" style="float: right;font-weight: bold;">-</span>
   </div>
   <div id="tbDevBtcFromDb"class="table-responsive">
@@ -278,73 +288,14 @@
 {% endblock %}
  
 {% block javascript %} 
-<script src="{% static 'js/ConvertingValues.js' %}"></script> 
+<script src="{% static 'js/DefaultFunction.js' %}"></script> 
 <script src="{% static 'js/DevelopmentBitcoin.js' %}"></script> 
 <script type="text/javascript">
 
- //Load functions after done page
+//Load functions after done page
  $(document).ready(function(){
   DataToLoad.addValuesInsideElement();
   GraphicConfiguration.showGraphic('{{ dates|safe }}', '{{ closes|safe }}', '{{ volumes|safe }}');
  });
-
- //Call function to check development bitcoin from api
- $("#btnCheckDevPrice").on("click", function(){
-  if( CrudSearchDevelopmentBitcoin.validation() ){ CrudSearchDevelopmentBitcoin.developmentBitcoinAjax(); }
- });
- 
- //Call function to save all data from api
-$(document).on('click', '#btnSaveAllDataToDB',function(){
-  if( CrudSearchDevelopmentBitcoin.validation() ){ CrudSearchDevelopmentBitcoin.saveAllResultSearchingAjax(); }
-});
-
- //Call function to ask if save all data from api
-$(document).on('click', '#btnSaveAllDevelopment',function(){
-  $("#askSaveAllModel").modal('show');
-});
-
-//Call function to save one data from api
-$(document).on('click', '.btnSaveOneDevelopment', function(){
- var row = $(this).closest("tr");    // Find the row
-  CrudSearchDevelopmentBitcoin.saveOneResultSearchingAjax( CovertingValues.textToDate( row.find(".getDateToSave").text(), "DD/MM/YYYY", "YYYY-MM-DD"), row.find(".getCloseToSave").text(), row.find(".getVolumeToSave").text());
-});
-
-$("#btnActionUpdateDevBtc").on("click", function(){
- if( CrudDevelopmentBitcoinDb.validation() ){ CrudDevelopmentBitcoinDb.updateDataTable() }
-});
-
-//Add values on form from modal to update data
-$(document).on('click', '.btnUpdateDevBtc', function(){ 
- var row = $(this).closest("tr");
-  $("#txtDateUpdate").val(row.find(".txtDateToUpdate").text());
-  $("#txtPriceUpdate").val(row.find(".txtCloseToUpdate").text());
-  $("#txtVolumeUpdate").val(row.find(".txtVolumeToUpdate").text());  
-  $("#txtOutputPriceUpdate").val("");
-  $("#msgOutputUpdSuccess").css({'display':'none'});
-  $("#msgOutputUpdError").css({'display':'none'});   
-  $('#infomationModelToUpdate').modal('show');
-});
-
-//Format input in txtPriceUpdate and send to txtOutputPriceUpdate
-$("#txtPriceUpdate").on("keyup",function() {
-  $("#txtPriceUpdate").val( CovertingValues.removePointNumber( $("#txtPriceUpdate").val() ) );
-  $("#txtOutputPriceUpdate").val( CovertingValues.addDecimal( $("#txtPriceUpdate").val() ) );
-});
-
-//Call function asking to remove data from database
-$(document).on('click', '.btnRemoveDevBtc', function(){
- $("#askRemoveAllModel").modal("show");
- var row = $(this).closest("tr");    // Find the row
- $("#lblDataToRemove").text(row.find(".txtDateToUpdate").text());
-});
-
-//Call function to remove from database
-$("#btnRemoveFromDB").on("click", function(){
-  CrudDevelopmentBitcoinDb.removeDataTable( CovertingValues.textToDate( $("#lblDataToRemove").text(), "DD-MM-YYYY", "YYYY-MM-DD") );
-});
-
-
-//Load graphic
-//showGraph('{{ dates|safe }}', '{{ closes|safe }}', '{{ volumes|safe }}');
 </script>     
 {% endblock %}
