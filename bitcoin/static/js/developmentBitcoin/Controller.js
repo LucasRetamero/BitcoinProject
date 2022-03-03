@@ -1,12 +1,36 @@
-let graphCanvas; // Variable to instance chart graphic
-let month = []; // Month to search development
-let cbDay = $("#txtDay"); // Field to search development
-let cbMonth = $("#txtMonth"); // Field to search development
-let cbYear = $("#txtYear"); // Field to search development
-let cbQuantity = $("#txtQtty"); // Field to search development
-let cvDevGraphic  = $("#DevelopmentBtc"); // Field to show graphic
+var graphCanvas =  null;
+var cvDevGraphic = $("#DevelopmentBtc");
+var month = []; // Month to search development
+var cbDay = $("#txtDay"); // Field to search development
+var cbMonth = $("#txtMonth"); // Field to search development
+var cbYear = $("#txtYear"); // Field to search development
+var cbQuantity = $("#txtQtty"); // Field to search development
 
-//Set value in field
+//Set and Get: cbDay
+ function getCbDay(){
+   return this.cbDay;
+ }
+ 
+//Set and Get: GraphCanvas
+ function setGraphCanvas(newValue){
+  this.graphCanvas = newValue;	
+ }
+
+ function getGraphCanvas(){
+  return this.graphCanvas;	
+ }
+ 
+ //Destoyer graphic to build other new graphic
+ function destoyerGraphCanvas(){
+  if(getGraphCanvas() != null){ return getGraphCanvas().destroy(); }
+ }      
+	
+ //Set and Get: CvDevGraphic	
+ function getCvDevGraphic(){
+  return this.cvDevGraphic;
+ }
+ 
+ //Set value in field
 function setTxtPriceUpdate(txtValue) {
  return $("#txtPriceUpdate").val( txtValue );
 }

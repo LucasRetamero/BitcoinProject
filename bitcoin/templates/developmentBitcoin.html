@@ -20,7 +20,7 @@
 
 <div class="card" style="margin-bottom: 25px;">
   <div class="card-header bg-primary text-white h4" onclick="showHideGraph('#myChart', '#optionPrice')">
-    Pesquisar desenvolvimento do Bitcoin pela data
+    Pesquisar desenvolvimento do Bitcoin
   </div>
   <div id="msgOutputSearchDevError" class="alert alert-danger" role="alert" style="display: none;">
   <center><b>Operação não realizada !</b></center><br>
@@ -62,14 +62,14 @@
     </select>
   </div>
   </div>
-  <button type="button" class="btn btn-lg btn-primary text-white w-50 mx-auto" id="btnCheckDevPrice" style="margin-top: 15px;"><span data-feather="check-square" style="width: 25px;height: 25px;"></span> Verificar desenvolvimento</button>
+  <button type="button" class="btn btn-lg btn-primary text-white w-50 mx-auto" id="btnCheckDevPrice" style="margin-top: 15px;" data-url="{% url 'DevelopmentSearchApi' %}"><span data-feather="check-square" style="width: 25px;height: 25px;"></span> Verificar desenvolvimento</button>
  </div>
  
 <div class="card" id="devBtc">
   <div class="card-header bg-primary text-white h4" onclick="showAndHide('#DevelopmentBtc', '#optionDevPrice')">
     Desenvolvimento do Bitcoin  <span id="optionDevPrice" style="float: right;font-weight: bold;">-</span>
   </div>
- <canvas class="my-4 w-100" id="DevelopmentBtc" width="900" height="380"></canvas>
+ <canvas class="my-4 w-100" id="DevelopmentBtc" width="900" height="380" data-url="{% url 'DevelopmentAllDataToGraphic' %}"></canvas>
 </div>
 
 <div class="card" id="listDevBtc" style="display: none;">
@@ -93,7 +93,7 @@
               <td id="txtQuantity"><!--{{ valueDev.Data.TimeTo|print_timestamp|date:"d-m-Y" }}--></td>
               <td><button id="btnSaveAllDevelopment" type="button" class="btn btn-primary text-white"><span data-feather="plus-square" style="width: 20px;height: 20px;"></span> Salvar Todos</button></td>
 			  </tr>
-			   <table id="tbListDevPrice" class="table table-striped table-sm">
+			   <table id="tbListDevPrice" class="table table-striped table-sm" data-url="{% url 'DevelopmentSave' %}">
               <thead>
                 <tr>
                   <th>Data</th>
@@ -122,7 +122,7 @@
     Lista do desenvolvimento do Bitcoin <span id="lblDevFromDb" style="float: right;font-weight: bold;">-</span>
   </div>
   <div id="tbDevBtcFromDb"class="table-responsive">
-            <table id="tbDevBtcToPage"class="table table-striped table-sm">
+            <table id="tbDevBtcToPage" class="table table-striped table-sm" data-url="{% url 'DevelopmentAllData' %}">
               <thead>
                 <tr>
                   <th>Data</th>
@@ -199,7 +199,7 @@
       </div>
       <div id="btnAction" class="modal-footer">
         <button type="button" class="btn btn-primary" data-dismiss="modal"><span data-feather="x-square"></span> Fechar</button>
-        <button id="btnSaveAllDataToDB" type="button" class="btn btn-success" data-dismiss="modal"><span data-feather="plus-square"></span> Salvar Todos</button>
+        <button id="btnSaveAllDataToDB" type="button" class="btn btn-success" data-dismiss="modal" data-url="{% url 'DevelopmentSaveAll' %}"><span data-feather="plus-square"></span> Salvar Todos</button>
       </div>
     </div>
   </div>
@@ -220,7 +220,7 @@
       </div>
       <div id="btnAction" class="modal-footer">
         <button type="button" class="btn btn-primary" data-dismiss="modal"><span data-feather="x-square"></span> Fechar</button>
-        <button id="btnRemoveFromDB" type="button" class="btn btn-danger" data-dismiss="modal"><span data-feather="trash-2"></span> Remover</button>
+        <button id="btnRemoveFromDB" type="button" class="btn btn-danger" data-dismiss="modal" data-url="{% url 'DevelopmentRemove' %}"><span data-feather="trash-2"></span> Remover</button>
       </div>
     </div>
   </div>
@@ -278,122 +278,18 @@
 {% endblock %}
  
 {% block javascript %} 
-<script src="{% static 'js/developmentBitcoin/changeFrontEnd.js' %}"></script>     
-<script src="{% static 'js/developmentBitcoin/event.js' %}"></script>     
+    <script src="{% static 'js/formatValues.js' %}"></script> 
+<script src="{% static 'js/developmentBitcoin/View.js' %}"></script> 
+<!--<script src="{% static 'js/developmentBitcoin/event.js' %}"></script>     
 <script src="{% static 'js/developmentBitcoin/graphic.js' %}"></script>     
-<script src="{% static 'js/developmentBitcoin/setAndGet.js' %}"></script>     
 <script src="{% static 'js/developmentBitcoin/validation.js' %}"></script>     
-<script src="{% static 'js/formatValues.js' %}"></script>
+<script src="{% static 'js/developmentBitcoin/Controller.js' %}"></script>     
+<script src="{% static 'js/developmentBitcoin/DAO.js' %}"></script>     
+<script src="{% static 'js/developmentBitcoin/View.js' %}"></script>     
+<script src="{% static 'js/formatValues.js' %}"></script>-->
 <script type="text/javascript">
 
-//DAO: Get all data from database
-function getAllDevelopmentBitcoin(){
-    $.ajax({
-        url: "{% url 'DevelopmentAllData' %}",
-        dataType: 'json',
-        type: 'get',
-        cache:false,
-        success: function(data){
-            //console.log(data);
-            var event_data = '<tbody>';
-			var mainObj = JSON.parse(data.dataBtc);
-			$('#tbDevBtcToPage').find('tbody').remove();
-			 for(i = 0;i < mainObj.length; i++){
-			  var d = new Date(mainObj[i]["fields"]["data"]);
-				event_data += '<tr>';
-                event_data += '<td class="txtDateToUpdate">'+("0" + (d.getDate() + 1)).slice(-2)+"/"+("0" + (d.getMonth() + 1)).slice(-2) + "/" + d.getFullYear()+'</td>';
-                event_data += '<td class="txtCloseToUpdate">'+mainObj[i]["fields"]["ultimo"]+'</td>';
-                event_data += '<td class="txtVolumeToUpdate">'+mainObj[i]["fields"]["volume"]+'</td>';
-                event_data += '<td><button type="button" class="btn btn-warning btnUpdateDevBtc"><span data-feather="edit"></span> Editar</button></td>';
-                event_data += '<td><button type="button" class="btn btn-danger btnRemoveDevBtc"><span data-feather="trash-2"></span> Remover</button></td>';
-                event_data += '</tr>';
-			 }
-			 event_data += '</tbody>';
-            $("#tbDevBtcToPage").append(event_data);
-			feather.replace();
-        },
-        error: function(d){
-            /*console.log("error");*/
-            alert("404. Please wait load from database.");
-        }
-    });
-}
 
-//DAO: Search development of bitcoin 
-function getListDevBtc(limit, date){
-    $.ajax({
-        url: "{% url 'DevelopmentSearchApi' %}",
-		data: {
-          'toLimit': limit,
-		  'toTs': date
-        },
-        dataType: 'json',
-        type: 'get',
-        cache:false,
-        success: function(data){
-            //console.log(data);
-            setInfoTableFromApi(convertTimestampToDate(data.devPrice.Data.TimeFrom, 1), convertTimestampToDate(data.devPrice.Data.TimeTo, 1), data.devPrice.Data.Data.length);
-			createBodyFromListDevBtc(data.devPrice.Data.Data);			
-			if(!$("#listDevBtc").is(":visible")){ $("#listDevBtc").css({'display': 'block'}); }
-			showMsgOnSearchDevPrice(1);
-			getDateUpdateGraphDevBtc();
-			getAllDevelopmentBitcoin();
-        },
-        error: function(d){
-            /*console.log("error");*/
-            alert("404. Please wait load from api.");
-        }
-    });
-}
-
-//DAO: Send data by parameter and do searching(server-side) to save in the database
-function setSaveAllListDevBtc(limit, date){
-    $.ajax({
-        url: "{% url 'DevelopmentSaveAll' %}",
-		data: {
-          'toLimit': limit,
-		  'toTs': date
-        },
-        dataType: 'json',
-        type: 'get',
-        cache:false,
-        success: function(data){
-            //console.log(data);
-            if(data.saved){ setTitleAndMsgInformationModel("Operação realizada com successo !", "Todos os dados foram salvos com sucesso !"); }
-			getDateUpdateGraphDevBtc();
-			getAllDevelopmentBitcoin();
-        },
-        error: function(d){
-            /*console.log("error");*/
-            alert("404. Please wait load from api.");
-        }
-    });
-}
-
-//DAO: Send data by parameter and save in the database
-function setSaveListDevBtc(date, close, volume){
-    $.ajax({
-        url: "{% url 'DevelopmentSave' %}",
-		data: {
-          'date': date,
-		  'close': close,
-		  'volume': volume
-        },
-        dataType: 'json',
-        type: 'get',
-        cache:false,
-        success: function(data){
-            //console.log(data);
-            if(data.saved){ setTitleAndMsgInformationModel("Operação realizada com sucesso !", "Dados salvo com sucesso !"); }
-			getDateUpdateGraphDevBtc();
-			getAllDevelopmentBitcoin();
-        },
-        error: function(d){
-            /*console.log("error");*/
-            alert("404. Please wait load from api.");
-        }
-    });
-}
 
 //DAO: Send data by parameter and update in the database
 function setUpdateListDevBtc(date, close, volume){
@@ -420,49 +316,47 @@ function setUpdateListDevBtc(date, close, volume){
     });
 }
 
-//DAO: Get data from database to send in the graphic
-function getDateUpdateGraphDevBtc(){
-    $.ajax({
-        url: "{% url 'DevelopmentAllDataToGraphic' %}",
-		data: {},
-        dataType: 'json',
-        type: 'get',
-        cache:false,
-        success: function(data){
-            //console.log(data);
-            showGraph( data.date, data.close, data.volume );
-        },
-        error: function(d){
-            /*console.log("error");*/
-            alert("404. Please wait load from api.");
-        }
-    });
-}
+ //Load functions after done page
+ $(document).ready(function(){
+  DataToLoad.addValuesInsideElement();
+  GraphicConfiguration.showGraphic('{{ dates|safe }}', '{{ closes|safe }}', '{{ volumes|safe }}');
+ });
 
-//DAO: remove data from database
-function setRemoveDateDevBtc(date){
-    $.ajax({
-        url: "{% url 'DevelopmentRemove' %}",
-		data: {
-		'date' : date,
-		},
-        dataType: 'json',
-        type: 'get',
-        cache:false,
-        success: function(data){
-            //console.log(data);
-            if(data.deleted){ setTitleAndMsgInformationModel("Operação realizada com sucesso !", "Dado removido com sucesso !"); }			
-			getDateUpdateGraphDevBtc();
-			getAllDevelopmentBitcoin();
-        },
-        error: function(d){
-            /*console.log("error");*/
-            alert("404. Please wait load from api.");
-        }
-    });
-}
+ //Call function to check development bitcoin from api
+ $("#btnCheckDevPrice").on("click", function(){
+  if( CrudSearchDevelopmentBitcoin.validation() ){ CrudSearchDevelopmentBitcoin.developmentBitcoinAjax(); }
+ });
+ 
+ //Call function to save all data from api
+$(document).on('click', '#btnSaveAllDataToDB',function(){
+  if( CrudSearchDevelopmentBitcoin.validation() ){ CrudSearchDevelopmentBitcoin.saveAllResultSearchingAjax(); }
+});
+
+ //Call function to ask if save all data from api
+$(document).on('click', '#btnSaveAllDevelopment',function(){
+  $("#askSaveAllModel").modal('show');
+});
+
+//Call function to save one data from api
+$(document).on('click', '.btnSaveOneDevelopment', function(){
+ var row = $(this).closest("tr");    // Find the row
+  CrudSearchDevelopmentBitcoin.saveOneResultSearchingAjax( CovertingValues.textToDate( row.find(".getDateToSave").text(), "DD/MM/YYYY", "YYYY-MM-DD"), row.find(".getCloseToSave").text(), row.find(".getVolumeToSave").text());
+});
+
+//Call function asking to remove data from database
+$(document).on('click', '.btnRemoveDevBtc', function(){
+ $("#askRemoveAllModel").modal("show");
+ var row = $(this).closest("tr");    // Find the row
+ $("#lblDataToRemove").text(row.find(".txtDateToUpdate").text());
+});
+
+//Call function to remove from database
+$("#btnRemoveFromDB").on("click", function(){
+  CrudDevelopmentBitcoinDb.removeDataTable( CovertingValues.textToDate( $("#lblDataToRemove").text(), "DD-MM-YYYY", "YYYY-MM-DD") );
+});
+
 
 //Load graphic
-showGraph('{{ dates|safe }}', '{{ closes|safe }}', '{{ volumes|safe }}');
+//showGraph('{{ dates|safe }}', '{{ closes|safe }}', '{{ volumes|safe }}');
 </script>     
 {% endblock %}
