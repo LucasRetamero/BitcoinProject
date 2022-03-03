@@ -138,10 +138,10 @@ def developmentBtcSearchApi(request):
 def developmentBtcSaveAll(request):
  queryApi = getDevelopmentBtc(request.GET.get('toLimit'), request.GET.get('toTs'))
  for valuesDev in queryApi['Data']['Data']:
-  if not DevelopmentBitcoin.objects.all().filter(data=datetime.date.fromtimestamp(int(valuesDev['time']))).count():
-   saveDevelopmentBitcoin(datetime.date.fromtimestamp(int(valuesDev['time'])), valuesDev['close'], valuesDev['volumefrom'])
+  if not DevelopmentBitcoin.objects.all().filter(data=datetime.date.fromtimestamp( int( valuesDev['time']) ) ).count():
+   saveDevelopmentBitcoin(datetime.date.fromtimestamp( int( valuesDev['time'] ) ), valuesDev['close'], valuesDev['volumefrom'])
   else:
-   updateDevelopmentBitcoin(datetime.date.fromtimestamp(int(valuesDev['time'])), valuesDev['close'], valuesDev['volumefrom'])
+   updateDevelopmentBitcoin(datetime.date.fromtimestamp( int( valuesDev['time'] ) ), valuesDev['close'], valuesDev['volumefrom'])
  data = {
   'saved': True
  }

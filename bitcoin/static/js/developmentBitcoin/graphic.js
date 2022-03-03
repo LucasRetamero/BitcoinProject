@@ -25,7 +25,7 @@ function dataToGraphic(date, close, volume){
         }
 }
 
-//Create graphic of development bitcoin
+
 function showGraph(date, close, volume){
 	if(graphCanvas != null){ graphCanvas.destroy(); }
      graphCanvas = new Chart(cvDevGraphic, {
