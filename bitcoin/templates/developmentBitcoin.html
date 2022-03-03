@@ -270,7 +270,7 @@
       </div>
       <div id="addButtonsUpdate" class="modal-footer">
         <button type="button" class="btn btn-primary" data-dismiss="modal"><span data-feather="x-square"></span> Fechar</button>
-        <button id="btnActionUpdateDevBtc" type="button" class="btn btn-warning"><span data-feather="edit"></span> Atualizar</button>
+        <button id="btnActionUpdateDevBtc" type="button" class="btn btn-warning" data-url="{% url 'DevelopmentSave' %}"><span data-feather="edit"></span> Atualizar</button>
       </div>
     </div>
   </div>
@@ -278,43 +278,9 @@
 {% endblock %}
  
 {% block javascript %} 
-    <script src="{% static 'js/formatValues.js' %}"></script> 
-<script src="{% static 'js/developmentBitcoin/View.js' %}"></script> 
-<!--<script src="{% static 'js/developmentBitcoin/event.js' %}"></script>     
-<script src="{% static 'js/developmentBitcoin/graphic.js' %}"></script>     
-<script src="{% static 'js/developmentBitcoin/validation.js' %}"></script>     
-<script src="{% static 'js/developmentBitcoin/Controller.js' %}"></script>     
-<script src="{% static 'js/developmentBitcoin/DAO.js' %}"></script>     
-<script src="{% static 'js/developmentBitcoin/View.js' %}"></script>     
-<script src="{% static 'js/formatValues.js' %}"></script>-->
+<script src="{% static 'js/ConvertingValues.js' %}"></script> 
+<script src="{% static 'js/DevelopmentBitcoin.js' %}"></script> 
 <script type="text/javascript">
-
-
-
-//DAO: Send data by parameter and update in the database
-function setUpdateListDevBtc(date, close, volume){
-    $.ajax({
-        url: "{% url 'DevelopmentSave' %}",
-		data: {
-          'date': date,
-		  'close': close,
-		  'volume': volume
-        },
-        dataType: 'json',
-        type: 'get',
-        cache:false,
-        success: function(data){
-            //console.log(data);
-            if(data.saved){  }
-			getDateUpdateGraphDevBtc();
-			getAllDevelopmentBitcoin();
-        },
-        error: function(d){
-            /*console.log("error");*/
-            alert("404. Please wait load from api.");
-        }
-    });
-}
 
  //Load functions after done page
  $(document).ready(function(){
@@ -341,6 +307,28 @@ $(document).on('click', '#btnSaveAllDevelopment',function(){
 $(document).on('click', '.btnSaveOneDevelopment', function(){
  var row = $(this).closest("tr");    // Find the row
   CrudSearchDevelopmentBitcoin.saveOneResultSearchingAjax( CovertingValues.textToDate( row.find(".getDateToSave").text(), "DD/MM/YYYY", "YYYY-MM-DD"), row.find(".getCloseToSave").text(), row.find(".getVolumeToSave").text());
+});
+
+$("#btnActionUpdateDevBtc").on("click", function(){
+ if( CrudDevelopmentBitcoinDb.validation() ){ CrudDevelopmentBitcoinDb.updateDataTable() }
+});
+
+//Add values on form from modal to update data
+$(document).on('click', '.btnUpdateDevBtc', function(){ 
+ var row = $(this).closest("tr");
+  $("#txtDateUpdate").val(row.find(".txtDateToUpdate").text());
+  $("#txtPriceUpdate").val(row.find(".txtCloseToUpdate").text());
+  $("#txtVolumeUpdate").val(row.find(".txtVolumeToUpdate").text());  
+  $("#txtOutputPriceUpdate").val("");
+  $("#msgOutputUpdSuccess").css({'display':'none'});
+  $("#msgOutputUpdError").css({'display':'none'});   
+  $('#infomationModelToUpdate').modal('show');
+});
+
+//Format input in txtPriceUpdate and send to txtOutputPriceUpdate
+$("#txtPriceUpdate").on("keyup",function() {
+  $("#txtPriceUpdate").val( CovertingValues.removePointNumber( $("#txtPriceUpdate").val() ) );
+  $("#txtOutputPriceUpdate").val( CovertingValues.addDecimal( $("#txtPriceUpdate").val() ) );
 });
 
 //Call function asking to remove data from database

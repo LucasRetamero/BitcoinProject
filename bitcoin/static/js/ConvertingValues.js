@@ -12,6 +12,12 @@ var CovertingValues = {
      this.newDate = new Date(ts * 1000);
      return this.output(option);
 	},
+   addDecimal: function(txtValue){
+	  return (txtValue / 100).toFixed(2);	
+    },
+   removePointNumber: function(txtValue){
+	return txtValue.replace(/[^0-9.]/g, '').replaceAll('.','').slice(0,12);
+   },
    output: function(option){
 	 switch(option){
 		 
@@ -38,11 +44,6 @@ function fmtChangeFormatDate(option, txtValue, formatValue){
 	}  
 	 
   return dateFormatOutput;
-}
-
-//Validation: replace and remove point of input
-function fmtRemovePoint(txtValue){
- return txtValue.replace(/[^0-9.]/g, '').replaceAll('.','').slice(0,12); 
 }
 
 //Validation: Replace to only 2 number after point

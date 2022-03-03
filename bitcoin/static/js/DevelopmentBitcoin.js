@@ -70,6 +70,34 @@ var CrudDevelopmentBitcoinGraphic = {
 };
 
 var CrudDevelopmentBitcoinDb = {
+  txtDateUpdate: $("#txtDateUpdate"),
+  txtPriceUpdate: $("#txtPriceUpdate"),
+  txtVolumeUpdate: $("#txtVolumeUpdate"),
+  txtOutputPriceUpdate: $("#txtOutputPriceUpdate"),
+  divErrorMsg: $("#msgOutputUpdError"),
+  divSuccessMsg: $("#msgOutputUpdSuccess"),
+  allField: [],
+  pointsField: 0,
+  x:0,
+   errorMsg: function(){
+    this.divSuccessMsg.css({'display':'none'});
+    this.divErrorMsg.css({'display':'block'});
+    (this.txtPriceUpdate.val() == "") ? $(".emptyPriceField").css({'display':'block'}) : $(".emptyPriceField").css({'display':'none'}) ; 
+    (this.txtVolumeUpdate.val() == "") ? $(".emptyVolumeField").css({'display':'block'}) : $(".emptyVolumeField").css({'display':'none'}) ; 
+    return false;
+   },
+   successMsg: function(){
+	this.divSuccessMsg.css({'display':'block'});
+    this.divErrorMsg.css({'display':'none'});  
+	return true;
+   },
+   validation: function(){
+    this.pointsField = this.allField.length;
+     for(this.x=0; this.x < this.allField.length; this.x++){ 
+	  if(this.allField[this.x].val() != ""){ this.pointsField--; }
+	 }
+    return (this.pointsField == 0) ? this.successMsg() : this.errorMsg() ;
+   },
 	allDataTable: function(){
 	 $.ajax({
         url: $("#tbDevBtcToPage").data('url'),
@@ -96,8 +124,30 @@ var CrudDevelopmentBitcoinDb = {
         type: 'get',
         cache:false,
         success: function(data){
+          //console.log(data);
+          if(data.deleted){ InformationModel.showMsg("Operação realizada com sucesso !", "Dado removido com sucesso !"); }			
+		  CrudDevelopmentBitcoinGraphic.dataToUpdateGraphAjax();
+		  CrudDevelopmentBitcoinDb.allDataTable();
+        },
+        error: function(d){
+            /*console.log("error");*/
+            alert("404. Please wait load from api.");
+        }
+     });	
+	},
+	updateDataTable: function(){
+	 $.ajax({
+        url: $("#btnActionUpdateDevBtc").data('url'),
+		data: {
+          'date': CovertingValues.textToDate( this.txtDateUpdate.val(), "DD-MM-YYYY", "YYYY-MM-DD"),
+		  'close': this.priceOrOutputPrice,
+		  'volume': this.txtVolumeUpdate.val()
+        },
+        dataType: 'json',
+        type: 'get',
+        cache:false,
+        success: function(data){
             //console.log(data);
-            if(data.deleted){ InformationModel.showMsg("Operação realizada com sucesso !", "Dado removido com sucesso !"); }			
 			CrudDevelopmentBitcoinGraphic.dataToUpdateGraphAjax();
 			CrudDevelopmentBitcoinDb.allDataTable();
         },
@@ -106,7 +156,19 @@ var CrudDevelopmentBitcoinDb = {
             alert("404. Please wait load from api.");
         }
      });	
-	}
+	},
+  
+  get priceOrOutputPrice(){
+   return ( this.txtOutputPriceUpdate.val() == "0.00" || this.txtOutputPriceUpdate.val() == "") ?  this.txtPriceUpdate.val() : this.txtOutputPriceUpdate.val(); 	  
+  },
+  
+  get allField(){
+   return this.allField = [
+    this.txtDateUpdate,
+    this.txtPriceUpdate,
+    this.txtVolumeUpdate
+   ];   
+  }
 };
 
 //Configuration of crud to search development of bitcoin
