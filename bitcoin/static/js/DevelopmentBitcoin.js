@@ -324,8 +324,8 @@ var CreateElement = {
        this.event_data += '<td class="txtDateToUpdate">'+("0" + (this.newDate.getDate() + 1)).slice(-2)+"-"+("0" + (this.newDate.getMonth() + 1)).slice(-2) + "-" + this.newDate.getFullYear()+'</td>';
        this.event_data += '<td class="txtCloseToUpdate">'+this.arrayFromJson[this.x]["fields"]["ultimo"]+'</td>';
        this.event_data += '<td class="txtVolumeToUpdate">'+this.arrayFromJson[this.x]["fields"]["volume"]+'</td>';
-       this.event_data += '<td><button type="button" class="btn btn-warning btnUpdateDevBtc"><span data-feather="edit"></span> Editar</button></td>';
-       this.event_data += '<td><button type="button" class="btn btn-danger btnRemoveDevBtc"><span data-feather="trash-2"></span> Remover</button></td>';
+       this.event_data += '<td><button type="button" class="btn btn-warning btnUpdateDevBtc"><span data-feather="edit"></span> Atualizar</button> ';
+       this.event_data += '<button type="button" class="btn btn-danger btnRemoveDevBtc"><span data-feather="trash-2"></span> Remover</button></td>';
        this.event_data += '</tr>';
 	 }
 	  this.event_data += '</tbody>';
@@ -416,8 +416,142 @@ var InformationModel = {
   }
 };
 
-//Show and hide an element
-function showAndHide(divActiom, changeLabel){
-($(changeLabel).text() == "-") ? $(changeLabel).text("+") : $(changeLabel).text("-");
- $(divActiom).toggle();
-}
+var changeElements = {
+  formSearchDevelopment: function(){
+  ( $("#txtDay").val() == "Default" ) ? this.changeAllElements(7) : this.changeAllElements(8); 
+  ( $("#txtMonth").val() == "Default" ) ? this.changeAllElements(5) : this.changeAllElements(6); 
+  ( $("#txtYear").val() == "Default" ) ? this.changeAllElements(1) : this.changeAllElements(2); 
+  ( $("#txtQtty").val() == "Default" ) ?  this.changeAllElements(3) : this.changeAllElements(4); 
+  },
+  changeAllElements: function(option){
+	switch(option){
+		
+	  case 1://Year field is empty
+	   $("#colorCbYear").css({'border': '2px solid red'});
+       $("#fullYearImg").css({'display': 'none'}); 
+       $("#emptyYearImg").css({'display': 'inline'});  
+	  break; 
+	  
+	  case 2://Year field is full
+	   $("#colorCbYear").css({'border': '2px solid green'});	  
+       $("#fullYearImg").css({'display': 'inline'}); 
+	   $("#emptyYearImg").css({'display': 'none'});  
+	  break;
+	  
+	  case 3://Quantity field is empty
+	   $("#colorCbQuantity").css({'border': '2px solid red'});
+	   $("#fullQuantityImg").css({'display': 'none'}); 
+	   $("#emptyQuantityImg").css({'display': 'inline'});
+	  break;
+	  
+	  case 4://Quantity field is full
+	   $("#colorCbQuantity").css({'border': '2px solid green'});
+	   $("#fullQuantityImg").css({'display': 'inline'}); 
+	   $("#emptyQuantityImg").css({'display': 'none'});
+	  break; 
+	  
+	  case 5://Month field is empty
+	   $("#colorCbMonth").css({'border': '2px solid red'});
+	   $("#fullMonthImg").css({'display': 'none'}); 
+	   $("#emptyMonthImg").css({'display': 'inline'});
+	  break;
+	  
+	  case 6://Month field is full
+	   $("#colorCbMonth").css({'border': '2px solid green'});
+	   $("#fullMonthImg").css({'display': 'inline'}); 
+	   $("#emptyMonthImg").css({'display': 'none'});
+	   break;
+	   
+	   case 7://Day field is empty
+	    $("#colorCbDay").css({'border': '2px solid red'});
+	    $("#fullDayImg").css({'display': 'none'}); 
+	    $("#emptyDayImg").css({'display': 'inline'}); 
+	   break;
+	   
+	   case 8://Day field is full
+	   $("#colorCbDay").css({'border': '2px solid green'});
+	   $("#fullDayImg").css({'display': 'inline'}); 
+	   $("#emptyDayImg").css({'display': 'none'});
+	  break;
+	  }
+  }
+};
+
+
+//Events ----------------------
+
+ //Call function to check development bitcoin from api
+ $("#btnCheckDevPrice").on("click", function(){
+  changeElements.formSearchDevelopment();
+  if( CrudSearchDevelopmentBitcoin.validation() ){ CrudSearchDevelopmentBitcoin.developmentBitcoinAjax(); }
+ });
+ 
+ //Call function to save all data from api
+$(document).on('click', '#btnSaveAllDataToDB',function(){
+  if( CrudSearchDevelopmentBitcoin.validation() ){ CrudSearchDevelopmentBitcoin.saveAllResultSearchingAjax(); }
+});
+
+ //Call function to ask if save all data from api
+$(document).on('click', '#btnSaveAllDevelopment',function(){
+  $("#askSaveAllModel").modal('show');
+});
+
+//Call function to save one data from api
+$(document).on('click', '.btnSaveOneDevelopment', function(){
+ var row = $(this).closest("tr");    // Find the row
+  CrudSearchDevelopmentBitcoin.saveOneResultSearchingAjax( CovertingValues.textToDate( row.find(".getDateToSave").text(), "DD/MM/YYYY", "YYYY-MM-DD"), row.find(".getCloseToSave").text(), row.find(".getVolumeToSave").text());
+});
+
+$("#btnActionUpdateDevBtc").on("click", function(){
+ if( CrudDevelopmentBitcoinDb.validation() ){ CrudDevelopmentBitcoinDb.updateDataTable() }
+});
+
+//Add values on form from modal to update data
+$(document).on('click', '.btnUpdateDevBtc', function(){ 
+ var row = $(this).closest("tr");
+  $("#txtDateUpdate").val(row.find(".txtDateToUpdate").text());
+  $("#txtPriceUpdate").val(row.find(".txtCloseToUpdate").text());
+  $("#txtVolumeUpdate").val(row.find(".txtVolumeToUpdate").text());  
+  $("#txtOutputPriceUpdate").val("");
+  $("#msgOutputUpdSuccess").css({'display':'none'});
+  $("#msgOutputUpdError").css({'display':'none'});   
+  $('#infomationModelToUpdate').modal('show');
+});
+
+//Format input in txtPriceUpdate and send to txtOutputPriceUpdate
+$("#txtPriceUpdate").on("keyup",function() {
+  $("#txtPriceUpdate").val( CovertingValues.removePointNumber( $("#txtPriceUpdate").val() ) );
+  $("#txtOutputPriceUpdate").val( CovertingValues.addDecimal( $("#txtPriceUpdate").val() ) );
+});
+
+//Call function asking to remove data from database
+$(document).on('click', '.btnRemoveDevBtc', function(){
+ $("#askRemoveAllModel").modal("show");
+ var row = $(this).closest("tr");    // Find the row
+ $("#lblDataToRemove").text(row.find(".txtDateToUpdate").text());
+});
+
+//Call function to remove from database
+$("#btnRemoveFromDB").on("click", function(){
+  CrudDevelopmentBitcoinDb.removeDataTable( CovertingValues.textToDate( $("#lblDataToRemove").text(), "DD-MM-YYYY", "YYYY-MM-DD") );
+});
+
+//Change txtDay option
+$("#txtDay").on("change", function(){
+ changeElements.formSearchDevelopment();
+ });
+
+//Change txtMonth option
+$("#txtMonth").on("change", function(){
+ changeElements.formSearchDevelopment();
+});
+
+//Change txtYear option
+$("#txtYear").on("change", function(){
+ changeElements.formSearchDevelopment();
+ });
+
+//Change txtQuantity option
+$("#txtQtty").on("change", function(){
+  changeElements.formSearchDevelopment();
+});
