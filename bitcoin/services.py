@@ -63,7 +63,18 @@ def getValuesDbBitcoin():
 def savePriceBitcon(valDate, valPrice):
    b = Bitcoin(data=valDate, preco=valPrice)
    b.save()
+ 
+def updatePriceBitcon(valueDate, valuePrice):
+   updateBitcoin = Bitcoin.objects.get(data=valueDate)
+   updateBitcoin.preco = valuePrice
+   updateBitcoin.save()
 
+def saveOrUpdatePriceBitcoin(valueDate, valuePrice):
+ if not Bitcoin.objects.all().filter(data=valueDate).count():
+   return savePriceBitcon(valueDate, valuePrice)
+ else:
+   return updatePriceBitcon(valueDate, valuePrice) 
+ 
 def saveDevelopmentBitcoin(valDate, valClose, valVolume):
  s = DevelopmentBitcoin(data=valDate, ultimo=valClose, volume=valVolume)
  s.save()

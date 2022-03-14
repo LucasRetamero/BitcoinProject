@@ -10,6 +10,7 @@ from .services import get_info
 from .services import getValuesDbBitcoin
 from .services import convertToTimeStamp
 from .services import savePriceBitcon
+from .services import saveOrUpdatePriceBitcoin
 from .services import saveDevelopmentBitcoin
 from .services import updateDevelopmentBitcoin
 from .services import getDevelopmentBtc
@@ -72,33 +73,18 @@ def priceBitcoinRemove(request):
  return JsonResponse(data)
 
 def priceBitcoinSave(request):
- dataTosave = request.GET.get("year", None)+"-"+request.GET.get("month", None)+"-"+request.GET.get("day", None)
- if not Bitcoin.objects.all().filter(data=dataTosave).count():
-  savePriceBitcon(dataTosave, request.GET.get("price", None))
-  data = {
+ saveOrUpdatePriceBitcoin(request.GET.get("year", None)+"-"+request.GET.get("month", None)+"-"+request.GET.get("day", None), request.GET.get("price", None))
+ data = {
    'dayValue': request.GET.get("day", None),
    'monthValue': request.GET.get("month", None),
    'yearValue': request.GET.get("year", None),
    'saved': True
   }
-  return JsonResponse(data)
- else:
-  data = {
-   'dayValue': request.GET.get("day", None),
-   'monthValue': request.GET.get("month", None),
-   'yearValue': request.GET.get("year", None),
-   'priceValue': request.GET.get("price", None)
-  }
-  return JsonResponse(data)
+ return JsonResponse(data)
 
 def priceBitcoinUpdate(request):
-  updateValue = Bitcoin.objects.get(data=request.GET.get("year", None)+"-"+request.GET.get("month", None)+"-"+request.GET.get("day", None))
-  updateValue.preco = request.GET.get("price", None)
-  updateValue.save()
+  saveOrUpdatePriceBitcoin(request.GET.get("date", None), request.GET.get("price", None))
   data = { 
-   'dayValue': request.GET.get("day", None),
-   'monthValue': request.GET.get("month", None),
-   'yearValue': request.GET.get("year", None),
    'updated': True
   }
   return JsonResponse(data)

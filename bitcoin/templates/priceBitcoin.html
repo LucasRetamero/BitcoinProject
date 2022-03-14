@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
 <style type="text/css">
@@ -70,11 +71,65 @@
  </div> 
 </div>
   
-<div class="card" id="priceBtc" style="display: none">
-  <div class="card-header bg-primary text-white h4" onclick="showHideGraph('#myChart', '#optionPrice')">
-    Resultado da pesquisa pelo preço do Bitcoin
+<div class="card" style="margin-bottom: 25px;">
+  <div class="card-header bg-primary text-white h4">
+    Pesquisar preço do Bitcoin pela data
+  </div>
+  <!-- Error Message -->
+  <div id="msgOutputSearchPriceError" class="alert alert-danger" role="alert" style="display: none;">
+  <center><b>Operação não realizada !</b></center><br>
+   Preencha todos os campos antes de continuar:
+  <ul>
+   <li class="emptyDayField"><b>Campo <i>Dia</i> não selecionado</b></li>
+   <li class="emptyMonthField"><b>Campo <i>Mês</i> não selecionado </b></li>
+   <li class="emptyYearField"><b>Campo <i>Ano</i> não selecionado </b></li>
+  </ul>
+</div>
+ <!-- Success Message -->
+<div id="msgOutputSearchPriceSuccess" class="alert alert-success" role="alert" style="display: none;">
+  <center><b>Operação realizada com sucesso !</b><br>
+   <a href="#priceBtc">Ver resultado da pesquisa !</a></center>
+</div>
+  <div class="form-group">
+   <label class="font-weight-bold">Dia <img id="fullDayImg" src="{% static 'img/rightIcon.png' %}" class="img-fluid" width="25px" height="25px" style="display: none;"></img> <img id="emptyDayImg" src="{% static 'img/errorIcon.png' %}" class="img-fluid" width="25px" height="25px" style="display: none;"></img></label>
+    <div id="colorCbDay">
+     <select class="form-control" id="txtDay" required>
+      <option value="Default" selected>Dia</option>
+	 </select>
+    </div>
+   </div>
+   
+   <div class="form-group">
+    <label class="font-weight-bold">Mês <img id="fullMonthImg" src="{% static 'img/rightIcon.png' %}" class="img-fluid" width="25px" height="25px" style="display: none;"></img> <img id="emptyMonthImg" src="{% static 'img/errorIcon.png' %}" class="img-fluid" width="25px" height="25px" style="display: none;"></img></label>
+     <div id="colorCbMonth">
+      <select class="form-control" id="txtMonth" required>
+       <option value="Default" selected>Mês</option>
+      </select>
+     </div>
+   </div>
+   
+   <div class="form-group">
+   <label class="font-weight-bold">Ano <img id="fullYearImg" src="{% static 'img/rightIcon.png' %}" class="img-fluid" width="25px" height="25px" style="display: none;"></img> <img id="emptyYearImg" src="{% static 'img/errorIcon.png' %}" class="img-fluid" width="25px" height="25px" style="display: none;"></img></label>
+    <div id="colorCbYear">
+     <select class="form-control" id="txtYear" required>
+      <option value="Default" selected>Ano</option>
+     </select>
+    </div>
+   </div>
+ 
+  <button type="button" class="btn btn-lg btn-primary text-white w-50 mx-auto" id="checkPrice" style="margin-top: 15px;" data-url="{% url 'PriceSearchData' %}">Verificar preço</button>
+ </div>
+ 
+ <div class="card" id="priceBtc" style="display: none">
+  <div class="card-header bg-primary text-white h4">
+    Resultado da pesquisa
   </div>
   <div class="content">
+   <!-- Success Message -->
+<div id="msgAfterSearchPriceSuccess" class="alert alert-success" role="alert" style="display: none;">
+  <center><b>Operação realizada com sucesso !</b><br>
+   <a href="#bitcoinPrice">Ver tabela !</a></center>
+</div>
  <div class="row"> 
   <div class="widgets_div">
           <div class="icon_div">
@@ -99,46 +154,22 @@
 	</div>
   </div> 
 </div>
-   <button id="btnToSavePrice" type="button" class="btn btn-block btn-primary text-white w-50 mx-auto" style="margin-bottom: 25px;">Salvar preço</button>		  
- </div>
- 
-<div class="card" style="margin-bottom: 25px;">
-  <div class="card-header bg-primary text-white h4" onclick="showHideGraph('#myChart', '#optionPrice')">
-    Pesquisar preço do Bitcoin pela data
-  </div>
-  <div class="row">
-  <div class="col-3">
-    <label for="exampleFormControlSelect1">Dia</label>
-    <select class="form-control" id="txtDay" required>
-     <option value="Default" selected>Dia</option>
-	</select>
-  </div>
-   <div class="col-3">
-    <label for="exampleFormControlSelect1">Mês</label>
-    <select class="form-control" id="txtMonth" required>
-      <option value="Default" selected>Mês</option>
-    </select>
-  </div>
-   <div class="col-3">
-    <label for="exampleFormControlSelect1">Ano</label>
-    <select class="form-control" id="txtYear" required>
-      <option value="Default" selected>Ano</option>
-    </select>
-  </div>
-  </div>
-  <button type="button" class="btn btn-lg btn-primary text-white w-50 mx-auto" id="checkPrice" style="margin-top: 15px;">Verificar preço</button>
+   <button id="btnToSavePrice" type="button" class="btn btn-block btn-primary text-white w-50 mx-auto" style="margin-bottom: 25px;" data-url= "{% url 'PriceSaveData' %}">Salvar preço</button>		  
  </div>
  
 <div class="card" id="priceBtc">
-  <div class="card-header bg-primary text-white h4" onclick="showHideGraph('#myChart', '#optionPrice')">
+  <div class="card-header bg-primary text-white h4" onclick="ChangeView.showAndHide('#myChart', '#optionPrice')">
     Preço do Bitcoin <span id="optionPrice" style="float: right;font-weight: bold;">-</span>
   </div>
- <canvas class="my-4 w-100" id="myChart" width="900" height="380"></canvas>
+ <canvas class="my-4 w-100" id="myChart" width="900" height="380" data-url="{% url 'PriceAllDataGraph' %}"></canvas>
 </div>
 
-<h2>Tabela: Preço do Bitcoin</h2>
-         <div class="table-responsive">
-            <table id="bitcoinPrice" class="table table-striped table-sm">
+<div class="card">
+  <div class="card-header bg-primary text-white h4" onclick="ChangeView.showAndHide('#bitcoinPrice', '#optionTbDbPrice')">
+    Tabela: Preço do Bitcoin <span id="optionTbDbPrice" style="float: right;font-weight: bold;">-</span>
+  </div>
+       <div class="table-responsive">
+            <table id="bitcoinPrice" class="table table-striped table-sm" data-url="{% url 'PriceAllData' %}">
               <thead>
                 <tr>
                   <th>Data</th>
@@ -149,10 +180,10 @@
               <tbody>
 			  {% for val in values %}
 			   <tr>
-			    <td>{{ val.data|date:'d/m/Y' }}</td>
-			    <td>{{ val.preco }}</td>
-				<td><button onclick="createFormToUpdate('{{ val.data|date:'d' }}', '{{ val.data|date:'m' }}', '{{ val.data|date:'Y' }}', '{{ val.preco }}')" type="button" class="btn btn-warning"><span data-feather="edit"></span> Editar</button></td>
-				<td><button onclick="addBtnAndTitleToRemove('{{ val.data|date:'d/m/Y' }}', '{{ val.data|date:'Y-m-d' }}')" data-toggle="modal" data-target="#infomationModel"type="button" class="btn btn-danger"><span data-feather="trash-2"></span> Remover</button></td>
+			    <td class="dateBitcoin">{{ val.data|date:'d-m-Y' }}</td>
+			    <td class="priceBitcoin">{{ val.preco }}</td>
+				<td><button type="button" class="btn btn-warning btnToUpdatePrice"><span data-feather="edit"></span> Editar</button>
+				    <button type="button" class="btn btn-danger btnToRemovePrice"><span data-feather="trash-2"></span> Remover</button></td>
 				<!--<td><button type="button" class="btn btn-danger" onclick="removePriceBitcoin('{{ val.data|date:'Y-m-d' }}')">Remover</button></td>-->
 			   </tr>
 			  {% endfor %}
@@ -160,6 +191,7 @@
               </tbody>
             </table>
           </div>
+ </div>
 <!-- Modal -->
 <div class="modal fade" id="infomationModel" tabindex="-1" role="dialog"  aria-hidden="true">
   <div class="modal-dialog" role="document">
@@ -171,7 +203,7 @@
         </button>
       </div>
       <div class="modal-body">
-        <p id="msgOutputRemove" style="font-size:15px;"><!-- Text here --></p>
+        <p id="msgOutput" style="font-size:15px;"><!-- Text here --></p>
       </div>
       <div id="btnActionRemove" class="modal-footer">
         <button type="button" class="btn btn-primary" data-dismiss="modal">Fechar</button>
@@ -179,6 +211,28 @@
     </div>
   </div>
 </div>
+<!-- Ask to remove -->
+<div class="modal fade" id="infomationModelAskRemove" tabindex="-1" role="dialog"  aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Remover data: <label id="lblDateToRemove"> </label>?</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p id="msgOutputRemove" style="font-size:15px;">Deseja realmente remover essa data?</p>
+      </div>
+	   <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-dismiss="modal">Fechar</button>
+		<button type="button" class="btn btn-danger btnActionRemove" data-url="{% url 'PriceRemoveData' %}"><span data-feather="trash-2"></span> Remover</button></td>
+     </div>
+    </div>
+  </div>
+</div>
+
+<!-- Form to update price -->
 <div class="modal fade" id="infomationModelToUpdate" tabindex="-1" role="dialog"  aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
@@ -190,376 +244,55 @@
       </div>
       <div id="formToUpdate" class="modal-body">
 	   <i>* = Campo editavel</i>
-        <div class="row">
-  <div class="col-3">
-    <label for="txtDayUpdate">Dia</label>
-    <input type="text" class="form-control" id="txtDayUpdate" style="background-color: white;" readonly>
-  </div>
-   <div class="col-3">
-    <label for="txtMonthUpdate">Mês</label>
-    <input type="text" class="form-control" id="txtMonthUpdate" style="background-color: white;" readonly>
-  </div>
-   <div class="col-3">
-    <label for="txtYearUpdate">Ano</label>
-	<input type="text" class="form-control" id="txtYearUpdate" style="background-color: white;" readonly>
-  </div>
+	 <!-- Error Message -->
+  <div id="msgOutputUpdatePriceError" class="alert alert-danger" role="alert" style="display: none;">
+  <center><b>Operação não realizada !</b></center><br>
+   Preencha todos os campos antes de continuar:
+  <ul>
+   <li class="emptyDateToUpdate"><b>Campo <i>Data</i> não vazio !</b></li>
+   <li class="emptyPriceToUpdate"><b>Campo <i>Preço</i> não selecionado</b></li>
+  </ul>
+</div>
+ <!-- Success Message -->
+<div id="msgOutputUpdatePriceSuccess" class="alert alert-success" role="alert" style="display: none;">
+  <center><b>Operação realizada com sucesso !</b><br>
+        Dados atualizados com sucesso !</center>
+</div>
+   
+  <div class="form-group">
+    <label for="txtDateUpdate"><b>Data</b></label>
+    <input type="text" class="form-control" id="txtDateUpdate" style="background-color: #FFF;" readonly>
   </div>
   <div class="form-group">
-    <label for="txtPriceUpdate">Preço(*)</label>
+    <label for="txtPriceUpdate"><b>Preço(*)</b></label>
     <input type="text" class="form-control" id="txtPriceUpdate">
   </div>
     <div class="form-group">
-     <label for="txtPriceUpdate">Resultado Preço</label>
+     <label for="txtOutputPriceUpdate"><b>Resultado Preço</b></label>
      <input type="text" class="form-control" id="txtOutputPriceUpdate" style="background-color: #FFF" readonly>
 	</div>
       </div>
-      <div id="addButtonsUpdate" class="modal-footer">
+	  <div class="modal-footer">
         <button type="button" class="btn btn-primary" data-dismiss="modal">Fechar</button>
-      </div>
+		<button type="button" class="btn btn-warning btnActionUpdate" data-url="{% url 'PriceUpdateData' %}"><span data-feather="edit"></span> Atualizar</button></td>
+     </div>
     </div>
   </div>
 </div>
 {% endblock %}
 
+
 {% block javascript %}
+<script src="{% static 'js/DefaultFunction.js' %}"></script> 
+<script src="{% static 'js/PriceBitcoin.js' %}"></script> 
 <script type="text/javascript">
-var myChart;
-
-function addBtnAndTitleToRemove(title, dataValue){
-  $('#infomationModel').modal('show')
- document.getElementById("exampleModalLabel").innerHTML = "Remover data: "+title+" ?";
- document.getElementById("msgOutputRemove").innerHTML = "Deseja realmente remover essa data?";
-  if(document.getElementById("btnRemoveRowTable") == null){
-   let btn = document.createElement("button");
-   btn.innerHTML = "Remover";
-   btn.type = "button";
-   btn.id = "btnRemoveRowTable";
-   btn.className = "btn btn-danger";
-   btn.onclick = function () {
-   removePriceBitcoin(dataValue);
-   document.getElementById("btnRemoveRowTable").remove();
-   document.getElementById("exampleModalLabel").innerHTML = "Data removida";
-   document.getElementById("msgOutputRemove").innerHTML = "Data excluida com sucesso !";
-};
-   document.getElementById("btnActionRemove").appendChild(btn);
- }
-}
-
-function createFormToUpdate(dayDate, monthDate, yearDate, priceValue){
- setValuesFormToUpdate(dayDate, monthDate, yearDate, priceValue);
- if(document.getElementById("btnUpdateTableData") == null){
- let btn = document.createElement("button");
-   btn.innerHTML = 'Atualizar dados';
-   btn.type = "button";
-   btn.id = "btnUpdateTableData";
-   btn.className = "btn btn-warning";
-   btn.onclick = function (){
-   if(checkBeforeUpdate()){
-   updatePriceBitcoin($("#txtDayUpdate").val(), $("#txtMonthUpdate").val(), $("#txtYearUpdate").val(), getPriceBitcoinToUpdate()); 
-   showMsgModal("Data "+$("#txtDayUpdate").val()+"/"+ $("#txtMonthUpdate").val()+"/"+$("#txtYearUpdate").val()+" atualizada !", "Data e preço atualizado com sucesso !");
-   document.getElementById("btnUpdateTableData").remove();
-   $('#infomationModelToUpdate').modal('hide');
-   $('#infomationModel').modal('show');
-   if(document.getElementById("btnRemoveRowTable") != null ){document.getElementById("btnRemoveRowTable").remove();}
-    }
-  };
-   document.getElementById("addButtonsUpdate").appendChild(btn);
- }
-}
-
-function setValuesFormToUpdate(dayDate, monthDate, yearDate, priceValue){
- $('#infomationModelToUpdate').modal('show');
- $('#txtDayUpdate').val(('0' + dayDate).slice(-2));
- $('#txtMonthUpdate').val(('0' + monthDate).slice(-2));
- $('#txtYearUpdate').val(yearDate);
- $('#txtPriceUpdate').val(priceValue);
- $("#txtOutputPriceUpdate").val("");
-}
-
-function showMsgModal(txtTitle, txtMsg){
-  document.getElementById("exampleModalLabel").innerHTML = "Data "+$("#txtDayUpdate").val()+"/"+ $("#txtMonthUpdate").val()+"/"+$("#txtYearUpdate").val()+" atualizada !";
-  document.getElementById("msgOutputRemove").innerHTML = "Data e preço atualizado com sucesso !";
-}
-
-/* Get data from api by time */
-const getBtcData = async () => {
-   fetch('https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=USD')
-  .then(response => response.json())
-  .then(data => {
-    document.getElementById("info").innerHTML = '<b>1 BTC = ' + data.USD + ' USD</b>'
-  });
-}
-getBtcData();
-tcount=setInterval(function(){
-  tcount++
-  if (tcount==10) {getBtcData(); tcount=0}{
-   valueCountdown = (10-tcount);
-   document.getElementById("infotime").innerHTML = (valueCountdown < 10) ? "0"+valueCountdown : valueCountdown ;
-  }
-},1000);
-
-function createGraph(dateValue, priceValue){
-// Graphic of price from bitcoin
- if(myChart != null){ myChart.destroy(); }
- var ctx = document.getElementById("myChart");
-      myChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: (dateValue == null) ? {{ dates|safe }} : JSON.parse(dateValue.toString()) ,
-          datasets: [{
-		    label: ' Preço do Bitcoin',
-            data: (priceValue == null) ? {{ prices|safe }} : JSON.parse(priceValue.toString()),
-            lineTension: 0,
-            backgroundColor: 'transparent',
-            borderColor: '#007bff',
-            borderWidth: 4,
-            pointBackgroundColor: '#007bff'
-          }]
-        },
-        options: {
-          legend: {
-            display: false,
-          },      
-        }
-      });
-}
-createGraph(null, null);
-function addDates(){
- addDay();
- addMonth();
- addYear();
-}
-addDates();
-function addDay(){
-	for(var p=1; p<=31; p++){
-	  var opt = document.createElement('option');
-      opt.value = p;
-      opt.innerHTML = p;
-      document.getElementById("txtDay").appendChild(opt);	
- }
-}
-
-function addMonth(){
-var month = [
-    "janeiro",
-    "fevereiro",
-    "março",
-    "abril",
-    "maio",
-    "junho",
-    "julho",
-    "agosto",
-    "setembro",
-    "outubro",
-    "novembro",
-    "dezembro" 
- ];
-	for(var p=0; p<12; p++){
-	  var opt = document.createElement('option');
-      opt.value = p+1;
-      opt.innerHTML = month[p];
-      document.getElementById("txtMonth").appendChild(opt);	
- }
-}
-
-function addYear(){
-	for(var p=2009; p<=3000; p++){
-	  var opt = document.createElement('option');
-      opt.value = p;
-      opt.innerHTML = p;
-      document.getElementById("txtYear").appendChild(opt);	
-}
-}
-
-function showHideGraph(option, tztOption){
-  ($(tztOption).text() == "-") ? $(tztOption).html('+') : $(tztOption).html('-');
-  $(option).toggle();
-}
-
-function insertDecimal(num) {
-   return (num / 100).toFixed(2);
-}
-
-function getAllPriceBitcoin(){
-    $.ajax({
-        url: "{% url 'PriceAllData' %}",
-        dataType: 'json',
-        type: 'get',
-        cache:false,
-        success: function(data){
-            //console.log(data);
-            var event_data = '<tbody>';
-			var mainObj = JSON.parse(data.dataBtc);
-			$('#bitcoinPrice').find('tbody').remove();
-			 for(i = 0;i < mainObj.length; i++){
-			  var d = new Date(mainObj[i]["fields"]["data"]);
-				event_data += '<tr>';
-                event_data += '<td>'+("0" + (d.getDate() + 1)).slice(-2)+"/"+("0" + (d.getMonth() + 1)).slice(-2) + "/" + d.getFullYear()+'</td>';
-                event_data += '<td>'+mainObj[i]["fields"]["preco"]+'</td>';
-                event_data += '<td><button onclick="createFormToUpdate('+("0"+(d.getDate() + 1)).slice(-2)+','+("0" + (d.getMonth() + 1)).slice(-2)+','+d.getFullYear()+','+mainObj[i]["fields"]["preco"]+')" type="button" class="btn btn-warning"><span data-feather="edit"></span> Editar</button></td>';
-                event_data += '<td><button onclick="addBtnAndTitleToRemove(`'+("0" + (d.getDate() + 1)).slice(-2)+"/"+("0" + (d.getMonth() + 1)).slice(-2) + "/" + d.getFullYear()+'`'+','+'`'+d.getFullYear() +"-"+("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + (d.getDate() + 1)).slice(-2)+'`)" type="button" class="btn btn-danger">Remover</button></td>';
-                event_data += '</tr>';
-			 }
-			 event_data += '</tbody>';
-            $("#bitcoinPrice").append(event_data);
-			getDateUpdateGraph();
-        },
-        error: function(d){
-            /*console.log("error");*/
-            alert("404. Please wait load from database.");
-        }
-    });
-}
-
-function removePriceBitcoin(dateAll){
- $.ajax({
-            type: 'get',
-            url: "{% url 'PriceRemoveData' %}",
-			 data: {
-                'date': dateAll
-            },
-			dataType: 'json',
-            success: function (data) {
-			  if(data.deleted){ getAllPriceBitcoin(); }
-            },
-            error: function (data) {
-                console.log(data)
-            }
-        })
-}
-
-function savePriceBitcoin(){
- $.ajax({
-            type: 'get',
-            url: "{% url 'PriceSaveData' %}",
-			 data: {
-                'day': $("#daySave").text(),
-                'month': $("#monthSave").text(),
-                'year': $("#yearSave").text(),
-                'price': $("#lblPriceBitcoin").text()
-            },
-			dataType: 'json',
-            success: function (data) {			
-			  if(data.saved){
-			   $('#infomationModel').modal('show')
-               document.getElementById("exampleModalLabel").innerHTML = "Data "+("0" + data.dayValue).slice(-2)+"/"+("0" + data.monthValue).slice(-2)+"/"+data.yearValue+" cadastrada com sucesso !";
-               document.getElementById("msgOutputRemove").innerHTML = "Data e preço cadastrado com sucesso !";	
-			  }else{
-               createFormToUpdate(data.dayValue, data.monthValue, data.yearValue, data.priceValue);		   
-			  }
-			  getAllPriceBitcoin();
-            },
-            error: function (data) {
-                console.log(data)
-            }
-        })
-}
-
-function updatePriceBitcoin(dayDate, monthDate, yearDate, priceValue){
-  $.ajax({
-            type: 'get',
-            url: "{% url 'PriceUpdateData' %}",
-			 data: {
-                'day': dayDate,
-                'month': monthDate,
-                'year': yearDate,
-                'price': priceValue
-            },
-			dataType: 'json',
-            success: function (data) {			
-			  if(data.updated){
-			   $('#infomationModel').modal('show')
-               document.getElementById("exampleModalLabel").innerHTML = "Data "+("0" + data.dayValue).slice(-2)+"/"+("0" + data.monthValue).slice(-2)+"/"+data.yearValue+" atualizada com sucesso !";
-               document.getElementById("msgOutputRemove").innerHTML = "Data e preço atualizado com sucesso !";	
-			  }
-			  getAllPriceBitcoin();
-            },
-            error: function (data) {
-                console.log(data)
-            }
-        })
-}
-
-function getPriceBitcoinDate(){
-  $.ajax({
-            type: 'get',
-            url: "{% url 'PriceSearchData' %}",
-			 data: {
-                'txtDay': document.getElementById("txtDay").value,
-                'txtMonth': document.getElementById("txtMonth").value,
-                'txtYear': document.getElementById("txtYear").value
-            },
-			dataType: 'json',
-            success: function (data) {
-			  $("#priceBtc").css({'display': 'block'});
-			  $("#lblPriceBitcoin").text(data.valuePrice.BTC.USD);
-			  $("#lblDatePriceBitcoin").text(("0" + data.dayPrice).slice(-2)+"/"+("0" + data.monthPrice).slice(-2)+"/"+data.yearPrice);
-			  $("#daySave").text(data.dayPrice);
-			  $("#monthSave").text(data.monthPrice);
-			  $("#yearSave").text(data.yearPrice);
-            },
-            error: function (data) {
-                console.log(data)
-            }
-        })
-}
-
-function getDateUpdateGraph(){
-  $.ajax({
-            type: 'get',
-            url: "{% url 'PriceAllDataGraph' %}",
-			data: {},
-			dataType: 'json',
-            success: function (data) {
-			 createGraph(data.dates, data.prices);
-            },
-            error: function (data) {
-                console.log(data)
-            }
-        })
-}
-
-function checkGetPrice(){
- var points = 3;
-  if($("#txtDay").val() != "Default"){ points-=1; }
-  if($("#txtMonth").val() != "Default"){ points-=1; }
-  if($("#txtYear").val() != "Default"){ points-=1; }
-  return (points == 0) ? true : alert("Preencha todos os campos antes de consultar !"); 
-}
-
-function checkBeforeUpdate(){
- var points = 4;
-  if($("#txtDayUpdate").val() != ""){ points-=1; }
-  if($("#txtMonthUpdate").val() != ""){ points-=1; }
-  if($("#txtYearUpdate").val() != ""){ points-=1; }
-  if($("#txtPriceUpdate").val() != ""){ points-=1; }
-  
-  return (points == 0) ? true : alert("Preencha todos os campos antes de consultar !"); 
-}
-
-$("#btnToSavePrice").on("click", function() {
- savePriceBitcoin();
-});
-
-$("#checkPrice").on("click", function(){
- if(checkGetPrice()){ getPriceBitcoinDate(); }
-});
-
-$("#txtPriceUpdate").on("keyup",function() {
-   setTxtPriceUpdate( getTxtPriceUpdate().replace(/[^0-9.]/g, '').replaceAll('.','').slice(0,12));
-   $("#txtOutputPriceUpdate").val(insertDecimal(getTxtPriceUpdate()));
-});
-
-function getTxtPriceUpdate(){
- return document.getElementById("txtPriceUpdate").value;
-}
-
-function setTxtPriceUpdate(valuePar){
- return document.getElementById("txtPriceUpdate").value = valuePar;
-}
-
-function getPriceBitcoinToUpdate(){
- return ($("#txtOutputPriceUpdate").val() == "") ? $("#txtPriceUpdate").val() : $("#txtOutputPriceUpdate").val();
-}
+//Load functions after done page
+ $(document).ready(function(){
+  //DataToLoad.addValuesInsideElement();
+  GraphicConfiguration.showGraphic('{{ dates|safe }}', '{{ prices|safe }}');
+  DataToLoad.loadInsidePage();
+  DataToLoad.getBtcData();
+  DataToLoad.updateBtcData();
+ });
 </script>	 
 {% endblock %}
